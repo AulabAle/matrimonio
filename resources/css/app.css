@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Pinyon+Script&display=swap');
+
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    /* Font Families */
+    --font-serif: 'Cormorant Garamond', serif;
+    --font-sans: 'Montserrat', sans-serif;
+    --font-script: 'Pinyon Script', cursive;
+
+    /* Custom Color Palette from Invitation Styles */
+    --color-paper-ivory: #FAF6F0;
+    --color-paper-linen: #F7F3EC;
+    
+    --color-sage-light: #B8C5B0;
+    --color-sage-medium: #8FA282;
+    --color-sage-dark: #5E6D4E;
+    
+    --color-gold-light: #E9DEC9;
+    --color-gold-medium: #D1B280;
+    --color-gold-dark: #A88C5C;
+    
+    --color-blush-light: #F5E1E0;
+    --color-blush-medium: #DFA8A6;
+    
+    --color-charcoal: #2D3130;
+    --color-charcoal-light: #5C605F;
+}
+
+/* Custom Design System Utilities */
+@utility gold-border-geometric {
+    border: 1px solid var(--color-gold-medium);
+    position: relative;
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 4px;
+        border: 1px solid var(--color-gold-light);
+        pointer-events: none;
+    }
+}
+
+@utility paper-texture {
+    background-color: var(--color-paper-ivory);
+    background-image: radial-gradient(rgba(45, 49, 48, 0.015) 1px, transparent 0), radial-gradient(rgba(45, 49, 48, 0.015) 1px, transparent 0);
+    background-size: 8px 8px;
+    background-position: 0 0, 4px 4px;
+}
+
+@utility bg-couple-watermark {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.11;
+    filter: blur(1.5px);
+    z-index: 0;
+}
+
+@utility ampersand {
+    font-family: 'Cormorant Garamond', 'Baskerville', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* Prevent horizontal scroll globally on all screens */
+html {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+body {
+    max-width: 100%;
+}
+
+@media (max-width: 1023px) {
+    .bg-couple-watermark,
+    .bg-couple-watermark-print {
+        background-size: 100% 100% !important;
+    }
+}
+
+
