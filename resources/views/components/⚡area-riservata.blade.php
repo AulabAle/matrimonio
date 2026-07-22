@@ -1624,11 +1624,11 @@ new class extends Component
                                                 </td>
 
                                                 <!-- Allergie -->
-                                                <td class="py-3 px-3 max-w-[120px] truncate">
+                                                <td class="py-3 px-3 min-w-[150px] break-words">
                                                     @if($isRowEditing)
                                                         <input type="text" wire:model="editAllergies" class="w-full px-2 py-1 bg-white border border-zinc-200 rounded text-xs" placeholder="Allergie">
                                                     @else
-                                                        <span class="italic text-zinc-600" title="{{ $g['allergies'] ?: '' }}">{{ $g['allergies'] ?: '-' }}</span>
+                                                        <span class="italic text-zinc-600">{{ $g['allergies'] ?: '-' }}</span>
                                                     @endif
                                                 </td>
 
@@ -1805,7 +1805,7 @@ new class extends Component
                                             @endphp
                                             <span class="text-charcoal">{{ $totalAttending }}</span> <span class="text-zinc-400 font-normal">/ {{ $totalGroup }}</span>
                                         </td>
-                                        <td class="py-3.5 px-4 text-xs italic text-zinc-600 max-w-[120px] truncate" title="{{ $rsvp['allergies'] ?: '' }}">
+                                        <td class="py-3.5 px-4 text-xs italic text-zinc-600 min-w-[150px] break-words">
                                             {{ $rsvp['allergies'] ?: '-' }}
                                         </td>
                                         <td class="py-3.5 px-4 text-xs italic text-zinc-600 min-w-[150px] break-words">
