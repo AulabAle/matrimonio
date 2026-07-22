@@ -155,7 +155,7 @@
                         <!-- Right: Groom's side -->
                         <div class="space-y-0.5 font-serif text-sm text-charcoal-light pl-0 sm:pl-4 text-center sm:text-right">
                             <p class="font-semibold text-charcoal text-base">Erasmo Porfido</p>
-                            <p>Via Trieste 68/a - <span class="uppercase tracking-wider text-[11px]">Gravina</span></p>
+                            <p>Via Trieste 68/B - <span class="uppercase tracking-wider text-[11px]">Gravina</span></p>
                         </div>
                     </div>
                 </div>

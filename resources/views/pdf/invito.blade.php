@@ -199,7 +199,7 @@
             </td>
             <td class="address-right">
                 <div>Gravina in Puglia</div>
-                <div>Via Trieste, 68/a</div>
+                <div>Via Trieste, 68/B</div>
             </td>
         </tr>
     </table>
