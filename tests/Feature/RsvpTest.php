@@ -356,9 +356,9 @@ class RsvpTest extends TestCase
     }
 
     /**
-     * Test that submitting the form with additional names in notes extracts and registers them.
+     * Test that submitting the form with additional names in notes does NOT extract and register them.
      */
-    public function test_rsvp_extracts_guests_from_notes_successfully(): void
+    public function test_rsvp_does_not_extract_guests_from_notes(): void
     {
         Livewire::test('rsvp-form')
             ->set('first_name', 'Mario')
@@ -376,19 +376,13 @@ class RsvpTest extends TestCase
             'will_attend' => true,
         ]);
 
-        // Verify extracted guest with name and surname
-        $luca = Rsvp::where('first_name', 'Luca')->first();
-        $this->assertNotNull($luca);
-        $this->assertEquals('Neri', $luca->last_name);
-        $this->assertTrue($luca->will_attend);
-        $this->assertEquals('Inserito automaticamente dalle note di Mario Rossi', $luca->notes);
-
-        // Verify extracted guest with name only (defaulting to primary guest surname)
-        $sofia = Rsvp::where('first_name', 'Sofia')->first();
-        $this->assertNotNull($sofia);
-        $this->assertEquals('Rossi', $sofia->last_name);
-        $this->assertTrue($sofia->will_attend);
-        $this->assertEquals('Inserito automaticamente dalle note di Mario Rossi', $sofia->notes);
+        // Verify no extra guests were created
+        $this->assertDatabaseMissing('rsvps', [
+            'first_name' => 'Luca',
+        ]);
+        $this->assertDatabaseMissing('rsvps', [
+            'first_name' => 'Sofia',
+        ]);
     }
 
     public function test_opening_pdf_invitation_blocks_rest_of_application_for_guests(): void

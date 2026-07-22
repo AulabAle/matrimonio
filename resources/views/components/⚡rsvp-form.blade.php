@@ -50,73 +50,7 @@ new class extends Component
                 'rsvp_type' => 'single',
             ]);
 
-            // 2. Parse notes for additional guests if notes are not empty
-            if (!empty($this->notes)) {
-                // Normalize spaces and remove punctuation
-                $text = preg_replace('/[.,\/#!$%\^&\*;:{}=\-_`~()?"\']/u', ' ', $this->notes);
-                $words = preg_split('/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
-                
-                $stopWords = [
-                    'ciao', 'grazie', 'auguri', 'congratulazioni', 'felicitazioni', 'sposi', 'sposo', 'sposa', 'matrimonio',
-                    'villa', 'chiesa', 'festa', 'giorno', 'tavolo', 'menu', 'buon', 'buongiorno', 'buonasera', 'saluti',
-                    'abbraccio', 'abbracci', 'baci', 'bacio', 'un', 'una', 'uno', 'il', 'la', 'lo', 'i', 'gli', 'le', 'di', 'a', 'da',
-                    'in', 'con', 'su', 'per', 'tra', 'fra', 'e', 'o', 'ma', 'se', 'che', 'non', 'si', 'no', 'anche', 'ci', 'vi',
-                    'io', 'noi', 'voi', 'loro', 'mio', 'mia', 'miei', 'mie', 'tuo', 'tua', 'suo', 'sua', 'nostro', 'nostra',
-                    'vostro', 'vostra', 'caro', 'cara', 'cari', 'care', 'monica', 'erasmo', 'vengo', 'verrò', 'verremo',
-                    'saremo', 'siamo', 'sono', 'è', 'presente', 'presenti', 'confermo', 'confermiamo', 'parteciperò', 'parteciperemo', 'invito',
-                    'bellissimo', 'felici', 'contenti', 'piacere', 'dettagli', 'conferma', 'partecipazione', 'all', 'alla',
-                    'della', 'dello', 'degli', 'delle', 'nei', 'negli', 'nelle', 'ai', 'agli', 'alle', 'coi', 'nei', 'sui', 'purtroppo',
-                    'speriamo', 'presto', 'grande', 'grandissimi', 'felicità', 'vita', 'insieme', 'meraviglioso'
-                ];
 
-                $primaryFirstLower = mb_strtolower(trim($this->first_name));
-                $primaryLastLower = mb_strtolower(trim($this->last_name));
-
-                $i = 0;
-                $len = count($words);
-                while ($i < $len) {
-                    $word = $words[$i];
-                    $wordLower = mb_strtolower($word);
-
-                    // Check if word starts with a capital letter, is not a stop word, and not the primary guest name
-                    if (preg_match('/^[A-Z][a-zàèìòù]/u', $word) 
-                        && !in_array($wordLower, $stopWords) 
-                        && $wordLower !== $primaryFirstLower 
-                        && $wordLower !== $primaryLastLower) {
-                        
-                        $firstName = $word;
-                        $lastName = trim($this->last_name); // default to primary guest last name
-
-                        // Check if the next word is also capitalized and not a stop word/primary guest name
-                        if ($i + 1 < $len) {
-                            $nextWord = $words[$i + 1];
-                            $nextWordLower = mb_strtolower($nextWord);
-
-                            if (preg_match('/^[A-Z][a-zàèìòù]/u', $nextWord) 
-                                && !in_array($nextWordLower, $stopWords) 
-                                && $nextWordLower !== $primaryFirstLower 
-                                && $nextWordLower !== $primaryLastLower) {
-                                
-                                $lastName = $nextWord;
-                                $i++; // consume next word as last name
-                            }
-                        }
-
-                        // Create RSVP for this guest
-                        Rsvp::create([
-                            'first_name' => $firstName,
-                            'last_name' => $lastName,
-                            'will_attend' => true,
-                            'is_pregnant' => false,
-                            'allergies' => null,
-                            'dietary_requirements' => null,
-                            'notes' => 'Inserito automaticamente dalle note di ' . trim($this->first_name) . ' ' . trim($this->last_name),
-                            'rsvp_type' => 'single',
-                        ]);
-                    }
-                    $i++;
-                }
-            }
         });
 
         $this->success = true;
