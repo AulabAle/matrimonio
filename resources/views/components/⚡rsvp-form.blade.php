@@ -181,9 +181,9 @@ new class extends Component
                 </div>
             @else
                 <!-- Form View -->
-                <div class="space-y-4 pt-2 relative z-10">
+                <div class="space-y-4 pt-2 relative z-10 text-center flex flex-col items-center">
                     <span class="font-script text-gold-dark text-4xl select-none">Conferma la tua presenza</span>
-                    <p class="font-serif text-[10px] uppercase tracking-[0.2em] text-charcoal-light font-semibold">
+                    <p class="font-serif text-[10px] uppercase tracking-[0.2em] text-charcoal-light font-semibold max-w-md mx-auto">
                         Conferma la partecipazione al matrimonio di Monica <span class="ampersand text-xs font-normal">&amp;</span> Erasmo
                     </p>
                 </div>
