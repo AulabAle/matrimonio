@@ -1702,11 +1702,11 @@ new class extends Component
                                                 </td>
 
                                                 <!-- Note -->
-                                                <td class="py-3 px-3 max-w-[120px] truncate">
+                                                <td class="py-3 px-3 min-w-[150px] break-words">
                                                     @if($isRowEditing)
                                                         <input type="text" wire:model="editNotes" class="w-full px-2 py-1 bg-white border border-zinc-200 rounded text-xs" placeholder="Note">
                                                     @else
-                                                        <span class="italic text-zinc-600" title="{{ $g['notes'] ?: '' }}">{{ $g['notes'] ?: '-' }}</span>
+                                                        <span class="italic text-zinc-600">{{ $g['notes'] ?: '-' }}</span>
                                                     @endif
                                                 </td>
 
@@ -1808,7 +1808,7 @@ new class extends Component
                                         <td class="py-3.5 px-4 text-xs italic text-zinc-600 max-w-[120px] truncate" title="{{ $rsvp['allergies'] ?: '' }}">
                                             {{ $rsvp['allergies'] ?: '-' }}
                                         </td>
-                                        <td class="py-3.5 px-4 text-xs italic text-zinc-600 max-w-[120px] truncate" title="{{ $rsvp['notes'] ?: '' }}">
+                                        <td class="py-3.5 px-4 text-xs italic text-zinc-600 min-w-[150px] break-words">
                                             {{ $rsvp['notes'] ?: '-' }}
                                         </td>
                                         <td class="py-3.5 px-4 text-xs text-zinc-500 font-sans">
