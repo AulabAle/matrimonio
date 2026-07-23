@@ -68,13 +68,11 @@
     font-weight: 400;
 }
 
-/* Prevent horizontal scroll globally on all screens */
-html {
+/* Prevent horizontal scroll globally on all screens, especially mobile/tablet */
+html, body {
     max-width: 100%;
     overflow-x: hidden;
-}
-body {
-    max-width: 100%;
+    overflow-x: clip;
 }
 
 @media (max-width: 1023px) {
