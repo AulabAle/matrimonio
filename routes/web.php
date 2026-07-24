@@ -3,34 +3,26 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-use App\Http\Middleware\BlockSiteIfPdfViewer;
 
-Route::middleware(BlockSiteIfPdfViewer::class)->group(function () {
-    Route::get('/', function () {
-        return view('welcome');
-    });
 
-    Route::get('/dettagli', function () {
-        return view('dettagli');
-    })->name('dettagli');
-
-    Route::get('/conferma', function () {
-        return view('conferma');
-    })->name('conferma');
-
-    Route::get('/stampa-invito', function () {
-        return view('stampa-invito');
-    })->name('stampa-invito');
+Route::get('/', function () {
+    return view('welcome');
 });
 
-Route::get('/shared/invito-matrimonio-monica-erasmo.pdf', function () {
-    session(['block_site' => true]);
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.invito')
-        ->setOption('isRemoteEnabled', true);
-    return $pdf->stream('invito-monica-erasmo.pdf');
-})->name('invito-pdf');
+Route::get('/dettagli', function () {
+    return view('dettagli');
+})->name('dettagli');
 
-Route::middleware(['guest', BlockSiteIfPdfViewer::class])->group(function () {
+Route::get('/conferma', function () {
+    return view('conferma');
+})->name('conferma');
+
+Route::get('/stampa-invito', function () {
+    return view('stampa-invito');
+})->name('stampa-invito');
+
+
+Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return view('login');
     })->name('login');

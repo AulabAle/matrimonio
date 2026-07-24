@@ -29,7 +29,7 @@
 
         <footer class="w-full py-8 {{ $hideScrollOnDesktop ? 'lg:py-4 lg:pb-4' : '' }} pb-[calc(2rem+env(safe-area-inset-bottom))] border-t border-zinc-200/60 bg-white z-10 mt-auto">
             <div class="max-w-6xl mx-auto px-6 flex justify-center items-center text-xs text-charcoal-light">
-                <span>&copy; 2026 Invito Matrimonio Monica ed Erasmo</span>
+                <a href="{{ route('area-riservata') }}" class="hover:text-charcoal transition-colors">&copy; 2026 Invito Matrimonio Monica ed Erasmo</a>
             </div>
         </footer>
     </body>

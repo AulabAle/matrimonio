@@ -33,14 +33,6 @@ class RsvpTest extends TestCase
             ->assertSee('Stampa il tuo Invito');
     }
 
-    public function test_pdf_invitation_route_streams_pdf(): void
-    {
-        $response = $this->get(route('invito-pdf'));
-        $response->assertStatus(200);
-        $response->assertHeader('Content-Type', 'application/pdf');
-    }
-
-
 
     /**
      * Test that validation fails when name is empty.
@@ -385,44 +377,5 @@ class RsvpTest extends TestCase
         ]);
     }
 
-    public function test_opening_pdf_invitation_blocks_rest_of_application_for_guests(): void
-    {
-        // 1. Visit PDF page -> should set session variable and return PDF
-        $response = $this->get(route('invito-pdf'));
-        $response->assertStatus(200);
-        $this->assertTrue(session()->has('block_site'));
-
-        // 2. Try to visit home page -> should redirect back to the PDF
-        $response = $this->get('/');
-        $response->assertRedirect(route('invito-pdf'));
-
-        // 3. Try to visit details page -> should redirect back to the PDF
-        $response = $this->get('/dettagli');
-        $response->assertRedirect(route('invito-pdf'));
-    }
-
-    public function test_admin_is_not_blocked_by_pdf_session(): void
-    {
-        $admin = User::factory()->create(['role' => 'admin']);
-        $this->actingAs($admin);
-
-        // 1. Visit PDF page -> sets session variable
-        $response = $this->get(route('invito-pdf'));
-        $response->assertStatus(200);
-        $this->assertTrue(session()->has('block_site'));
-
-        // 2. Try to visit home page -> should load successfully (status 200) since user is admin
-        $response = $this->get('/');
-        $response->assertStatus(200);
-    }
-
-    public function test_host_based_pdf_protection_redirects_non_pdf_routes(): void
-    {
-        $response = $this->get('https://pdf.invito/');
-        $response->assertRedirect('https://pdf.invito/shared/invito-matrimonio-monica-erasmo.pdf');
-
-        $response = $this->get('https://pdf.invito/dettagli');
-        $response->assertRedirect('https://pdf.invito/shared/invito-matrimonio-monica-erasmo.pdf');
-    }
 }
 
