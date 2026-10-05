@@ -4,6 +4,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Selfie;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 new class extends Component
@@ -16,6 +17,12 @@ new class extends Component
     public $successMessage = null;
     public $errorMessage = null;
 
+    public function mount()
+    {
+        if (!Auth::check() || !Auth::user()->isAdmin()) {
+            return redirect()->to('/login');
+        }
+    }
     protected function rules()
     {
         return [
@@ -26,6 +33,9 @@ new class extends Component
 
     public function saveSelfie()
     {
+        if (!Auth::check() || !Auth::user()->isAdmin()) {
+            abort(403, 'Azione non autorizzata.');
+        }
         $this->successMessage = null;
         $this->errorMessage = null;
 
@@ -78,6 +88,9 @@ new class extends Component
 
     public function deleteSelfie($id)
     {
+        if (!Auth::check() || !Auth::user()->isAdmin()) {
+            abort(403, 'Azione non autorizzata.');
+        }
         $selfie = Selfie::find($id);
         if ($selfie) {
             if ($selfie->image_path && Storage::disk('public')->exists($selfie->image_path)) {
@@ -92,6 +105,176 @@ new class extends Component
     public function getSelfiesProperty()
     {
         return Selfie::orderBy('created_at', 'desc')->get();
+    }
+
+    public function downloadAllPolaroids()
+    {
+        if (!Auth::check() || !Auth::user()->isAdmin()) {
+            abort(403, 'Azione non autorizzata.');
+        }
+
+        $selfies = Selfie::orderBy('created_at', 'desc')->get();
+
+        if ($selfies->isEmpty()) {
+            $this->errorMessage = 'Nessuna foto disponibile da scaricare.';
+            return;
+        }
+
+        $tempFolder = storage_path('app/temp_polaroids_' . Str::uuid());
+        if (!is_dir($tempFolder)) {
+            mkdir($tempFolder, 0755, true);
+        }
+
+        $fontPath = 'C:/Windows/Fonts/georgia.ttf';
+        if (!file_exists($fontPath)) {
+            $fontPath = 'C:/Windows/Fonts/arial.ttf';
+        }
+
+        $totalCount = $selfies->count();
+
+        foreach ($selfies as $index => $selfie) {
+            $fullPath = null;
+            if (str_starts_with($selfie->image_path, 'selfies/')) {
+                $fullPath = Storage::disk('public')->path($selfie->image_path);
+            } elseif (file_exists(public_path(ltrim($selfie->image_path, '/')))) {
+                $fullPath = public_path(ltrim($selfie->image_path, '/'));
+            } elseif (file_exists(storage_path('app/public/' . ltrim($selfie->image_path, '/')))) {
+                $fullPath = storage_path('app/public/' . ltrim($selfie->image_path, '/'));
+            }
+
+            if (!$fullPath || !file_exists($fullPath)) {
+                continue;
+            }
+
+            $canvasWidth = 1200;
+            $canvasHeight = 1440;
+            $canvas = imagecreatetruecolor($canvasWidth, $canvasHeight);
+
+            $bgColor = imagecolorallocate($canvas, 253, 251, 247);
+            $borderColor = imagecolorallocate($canvas, 209, 178, 128);
+            $innerBorderColor = imagecolorallocate($canvas, 229, 231, 235);
+            $goldDark = imagecolorallocate($canvas, 140, 109, 59);
+            $subTextColor = imagecolorallocate($canvas, 113, 113, 122);
+
+            imagefilledrectangle($canvas, 0, 0, $canvasWidth, $canvasHeight, $bgColor);
+            imagesetthickness($canvas, 4);
+            imagerectangle($canvas, 10, 10, $canvasWidth - 11, $canvasHeight - 11, $borderColor);
+
+            $imgInfo = @getimagesize($fullPath);
+            if (!$imgInfo) {
+                imagedestroy($canvas);
+                continue;
+            }
+
+            $mime = $imgInfo['mime'];
+            $srcImg = null;
+            switch ($mime) {
+                case 'image/jpeg':
+                    $srcImg = @imagecreatefromjpeg($fullPath);
+                    break;
+                case 'image/png':
+                    $srcImg = @imagecreatefrompng($fullPath);
+                    break;
+                case 'image/webp':
+                    $srcImg = @imagecreatefromwebp($fullPath);
+                    break;
+                case 'image/gif':
+                    $srcImg = @imagecreatefromgif($fullPath);
+                    break;
+            }
+
+            if (!$srcImg) {
+                imagedestroy($canvas);
+                continue;
+            }
+
+            if ($mime === 'image/jpeg' && function_exists('exif_read_data')) {
+                @$exif = exif_read_data($fullPath);
+                if (!empty($exif['Orientation'])) {
+                    switch ($exif['Orientation']) {
+                        case 3:
+                            $srcImg = imagerotate($srcImg, 180, 0);
+                            break;
+                        case 6:
+                            $srcImg = imagerotate($srcImg, -90, 0);
+                            break;
+                        case 8:
+                            $srcImg = imagerotate($srcImg, 90, 0);
+                            break;
+                    }
+                }
+            }
+
+            $origW = imagesx($srcImg);
+            $origH = imagesy($srcImg);
+            $boxX = 70;
+            $boxY = 70;
+            $boxSize = 1060;
+
+            $srcAspect = $origW / $origH;
+            if ($srcAspect > 1) {
+                $cropH = $origH;
+                $cropW = $origH;
+                $cropX = (int)(($origW - $origH) / 2);
+                $cropY = 0;
+            } else {
+                $cropW = $origW;
+                $cropH = $origW;
+                $cropX = 0;
+                $cropY = (int)(($origH - $origW) / 2);
+            }
+
+            imagecopyresampled($canvas, $srcImg, $boxX, $boxY, $cropX, $cropY, $boxSize, $boxSize, $cropW, $cropH);
+            imagedestroy($srcImg);
+
+            imagesetthickness($canvas, 2);
+            imagerectangle($canvas, $boxX - 1, $boxY - 1, $boxX + $boxSize, $boxY + $boxSize, $innerBorderColor);
+
+            if (!empty($selfie->caption)) {
+                $fontSize = 32;
+                $bbox = imagettfbbox($fontSize, 0, $fontPath, '"' . $selfie->caption . '"');
+                $textWidth = abs($bbox[2] - $bbox[0]);
+                $textX = max(40, (int)(($canvasWidth - $textWidth) / 2));
+                $textY = 1240;
+                imagettftext($canvas, $fontSize, 0, $textX, $textY, $goldDark, $fontPath, '"' . $selfie->caption . '"');
+            }
+
+            $footerFontSize = 18;
+            $dateStr = $selfie->created_at ? $selfie->created_at->format('d/m/Y H:i') : date('d/m/Y H:i');
+            $footerText = "Ricordo N° " . ($totalCount - $index) . " • " . $dateStr;
+            $fBbox = imagettfbbox($footerFontSize, 0, $fontPath, $footerText);
+            $fWidth = abs($fBbox[2] - $fBbox[0]);
+            $fX = (int)(($canvasWidth - $fWidth) / 2);
+            $fY = 1350;
+
+            imagettftext($canvas, $footerFontSize, 0, $fX, $fY, $subTextColor, $fontPath, $footerText);
+
+            $fileName = sprintf("Polaroid_Selfie_%03d.jpg", $totalCount - $index);
+            imagejpeg($canvas, $tempFolder . '/' . $fileName, 90);
+            imagedestroy($canvas);
+        }
+
+        $zipFileName = 'Selfies_Polaroid_Monica_ed_Erasmo_' . date('Y-m-d_H-i') . '.zip';
+        $zipPath = storage_path('app/' . $zipFileName);
+
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
+            $files = glob($tempFolder . '/*.jpg');
+            foreach ($files as $file) {
+                $zip->addFile($file, basename($file));
+            }
+            $zip->close();
+        }
+
+        array_map('unlink', glob($tempFolder . '/*.*'));
+        @rmdir($tempFolder);
+
+        if (!file_exists($zipPath)) {
+            $this->errorMessage = 'Impossibile creare il pacchetto ZIP.';
+            return;
+        }
+
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
     }
 }; ?>
 
@@ -384,27 +567,40 @@ new class extends Component
                 </p>
             </div>
 
-            <!-- View Switcher Tabs (Carosello / Griglia Foto) -->
+            <!-- Action & View Switcher Tabs (Carosello / Griglia Foto / Scarica ZIP) -->
             @if ($this->selfies->isNotEmpty())
-                <div class="inline-flex rounded-lg bg-zinc-200/70 p-1 border border-zinc-300/60 font-serif text-xs">
+                <div class="flex flex-wrap items-center gap-3">
                     <button type="button" 
-                            @click="galleryView = 'carousel'" 
-                            :class="galleryView === 'carousel' ? 'bg-white text-gold-dark font-semibold shadow-sm' : 'text-charcoal-light hover:text-charcoal'"
-                            class="px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer">
+                            wire:click="downloadAllPolaroids" 
+                            wire:loading.attr="disabled"
+                            class="px-3.5 py-1.5 rounded-lg bg-gold-dark hover:bg-gold-medium text-white font-serif text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
-                        Carosello Polaroid
+                        <span wire:loading.remove wire:target="downloadAllPolaroids">Scarica ZIP Polaroid</span>
+                        <span wire:loading wire:target="downloadAllPolaroids">Creazione ZIP...</span>
                     </button>
-                    <button type="button" 
-                            @click="galleryView = 'grid'" 
-                            :class="galleryView === 'grid' ? 'bg-white text-gold-dark font-semibold shadow-sm' : 'text-charcoal-light hover:text-charcoal'"
-                            class="px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-                        </svg>
-                        Tutte le Foto (Gestisci)
-                    </button>
+
+                    <div class="inline-flex rounded-lg bg-zinc-200/70 p-1 border border-zinc-300/60 font-serif text-xs">
+                        <button type="button" 
+                                @click="galleryView = 'carousel'" 
+                                :class="galleryView === 'carousel' ? 'bg-white text-gold-dark font-semibold shadow-sm' : 'text-charcoal-light hover:text-charcoal'"
+                                class="px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                            </svg>
+                            Carosello Polaroid
+                        </button>
+                        <button type="button" 
+                                @click="galleryView = 'grid'" 
+                                :class="galleryView === 'grid' ? 'bg-white text-gold-dark font-semibold shadow-sm' : 'text-charcoal-light hover:text-charcoal'"
+                                class="px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                            Tutte le Foto (Gestisci)
+                        </button>
+                    </div>
                 </div>
             @endif
         </div>
