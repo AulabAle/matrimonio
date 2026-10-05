@@ -82,4 +82,24 @@ html, body {
     }
 }
 
+/* Swiper Custom Styling */
+.swiper-pagination-bullet {
+    background: var(--color-gold-medium) !important;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+    background: var(--color-gold-dark) !important;
+    opacity: 1;
+    width: 20px !important;
+    border-radius: 4px !important;
+}
+
+.swiper-button-next::after, .swiper-button-prev::after {
+    font-size: 14px !important;
+    font-weight: bold;
+}
+
+
 

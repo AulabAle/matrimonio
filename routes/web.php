@@ -21,6 +21,16 @@ Route::get('/stampa-invito', function () {
     return view('stampa-invito');
 })->name('stampa-invito');
 
+Route::get('/zona-selfie', function () {
+    return view('zona-selfie');
+})->name('zona-selfie');
+
+Route::get('/wedding-fight', function () {
+    return view('wedding-fight');
+})->name('wedding-fight');
+
+
+
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
