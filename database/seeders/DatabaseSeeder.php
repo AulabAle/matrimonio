@@ -16,17 +16,32 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Seed the admin user
-        User::create([
-            'username' => 'admin',
-            'password' => \Illuminate\Support\Facades\Hash::make('AdminWedding2026!'),
-            'role' => 'admin',
-        ]);
+        User::firstOrCreate(
+            ['username' => 'admin'],
+            [
+                'password' => \Illuminate\Support\Facades\Hash::make('AdminWedding2026!'),
+                'role' => 'admin',
+            ]
+        );
 
         // Seed a regular user for manual testing
-        User::create([
-            'username' => 'testuser',
-            'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
-            'role' => 'user',
-        ]);
+        User::firstOrCreate(
+            ['username' => 'testuser'],
+            [
+                'password' => \Illuminate\Support\Facades\Hash::make('Password123!'),
+                'role' => 'user',
+            ]
+        );
+        // Seed sample selfies for demonstration if none exist
+        if (\App\Models\Selfie::count() === 0) {
+            \App\Models\Selfie::create([
+                'image_path' => 'selfies/demo1.jpg',
+                'caption' => 'Viva gli Sposi! Monica ed Erasmo 🎉',
+            ]);
+            \App\Models\Selfie::create([
+                'image_path' => 'selfies/demo2.png',
+                'caption' => 'Un ricordo speciale di questa bellissima giornata ❤️',
+            ]);
+        }
     }
 }

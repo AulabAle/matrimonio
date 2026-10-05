@@ -21,6 +21,14 @@ Route::get('/stampa-invito', function () {
     return view('stampa-invito');
 })->name('stampa-invito');
 
+Route::get('/zona-selfie', function () {
+    if (!Auth::check() || !Auth::user()->isAdmin()) {
+        return redirect()->route('login');
+    }
+    return view('zona-selfie');
+})->name('zona-selfie');
+
+
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
