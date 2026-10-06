@@ -480,198 +480,43 @@
         return curve;
     }
 
-    // EDDERASMO SPECIAL SFX: Realistic Organic Fart Sound Synthesizer ("Il Peto Assassino")
+    // Audio element per la scorreggia dello sposo (Scorreggia.mp3)
+    const scorreggiaAudio = new Audio("{{ asset('audio/scorreggia.mp3') }}");
+    scorreggiaAudio.preload = 'auto';
+
     function playFartSFX() {
         if (!isAudioEnabled) return;
         initAudio();
-        const now = audioCtx.currentTime;
-        const duration = 0.42 + Math.random() * 0.15; // Natural organic variation
 
-        // 1. Fundamental Sphincter Flutter (Sawtooth + Pitch Wobble LFO)
-        const osc = audioCtx.createOscillator();
-        const oscGain = audioCtx.createGain();
-        const lfo = audioCtx.createOscillator();
-        const lfoGain = audioCtx.createGain();
-
-        // Flutter LFO (~22Hz pitch modulation)
-        const flutterSpeed = 18 + Math.random() * 10;
-        lfo.frequency.setValueAtTime(flutterSpeed, now);
-        lfoGain.gain.setValueAtTime(30 + Math.random() * 15, now);
-
-        osc.type = 'sawtooth';
-        const startPitch = 65 + Math.random() * 20; // 65-85 Hz base
-        osc.frequency.setValueAtTime(startPitch, now);
-        osc.frequency.exponentialRampToValueAtTime(Math.max(24, startPitch * 0.35), now + duration);
-
-        lfo.connect(osc.frequency);
-        lfo.start(now);
-        lfo.stop(now + duration);
-
-        // Lowpass filter to dampen extreme treble and keep warm low growl
-        const lowpass = audioCtx.createBiquadFilter();
-        lowpass.type = 'lowpass';
-        lowpass.frequency.setValueAtTime(350, now);
-        lowpass.frequency.linearRampToValueAtTime(140, now + duration);
-
-        // Distortion WaveShaper for realistic squelch growl
-        const waveshaper = audioCtx.createWaveShaper();
-        waveshaper.curve = createDistortionCurve(18);
-
-        oscGain.gain.setValueAtTime(0.75, now);
-        oscGain.gain.exponentialRampToValueAtTime(0.005, now + duration);
-
-        osc.connect(waveshaper);
-        waveshaper.connect(lowpass);
-        lowpass.connect(oscGain);
-        oscGain.connect(audioCtx.destination);
-
-        osc.start(now);
-        osc.stop(now + duration);
-
-        // 2. Heavy Sub-Bass Pressure Thrum
-        const subOsc = audioCtx.createOscillator();
-        const subGain = audioCtx.createGain();
-        subOsc.type = 'sine';
-        subOsc.frequency.setValueAtTime(80, now);
-        subOsc.frequency.exponentialRampToValueAtTime(28, now + duration * 0.85);
-
-        subGain.gain.setValueAtTime(0.65, now);
-        subGain.gain.exponentialRampToValueAtTime(0.001, now + duration * 0.85);
-
-        subOsc.connect(subGain);
-        subGain.connect(audioCtx.destination);
-        subOsc.start(now);
-        subOsc.stop(now + duration * 0.85);
-
-        // 3. Pressurized Gas Burst Noise (Turbulent Release)
-        const bufferSize = audioCtx.sampleRate * duration;
-        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = (Math.random() * 2 - 1) * (0.8 + Math.sin(i * 0.04) * 0.2);
+        try {
+            scorreggiaAudio.currentTime = 0;
+            const playPromise = scorreggiaAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => console.log('Playback error Scorreggia:', err));
+            }
+        } catch (err) {
+            console.log('Scorreggia audio play exception:', err);
         }
-        const noise = audioCtx.createBufferSource();
-        noise.buffer = buffer;
-
-        const noiseFilter = audioCtx.createBiquadFilter();
-        noiseFilter.type = 'bandpass';
-        noiseFilter.frequency.setValueAtTime(480, now);
-        noiseFilter.frequency.linearRampToValueAtTime(160, now + duration);
-        noiseFilter.Q.setValueAtTime(2.8, now);
-
-        const noiseGain = audioCtx.createGain();
-        noiseGain.gain.setValueAtTime(0.45, now);
-        noiseGain.gain.exponentialRampToValueAtTime(0.005, now + duration * 0.9);
-
-        noise.connect(noiseFilter);
-        noiseFilter.connect(noiseGain);
-        noiseGain.connect(audioCtx.destination);
-
-        noise.start(now);
     }
 
     // YOSHIMONICA SPECIAL SFX: Realistic Female Scream Synthesizer ("Il Grido di Munch")
+    // Audio element per l'urlo della sposa (Urlo.mp3)
+    const urloAudio = new Audio("{{ asset('audio/urlo.mp3') }}");
+    urloAudio.preload = 'auto';
+
     function playMunchScreamSFX() {
         if (!isAudioEnabled) return;
         initAudio();
-        const now = audioCtx.currentTime;
-        const duration = 0.58 + Math.random() * 0.12;
 
-        // 1. High Female Vocal Fundamental + Shrill Sweep
-        const osc1 = audioCtx.createOscillator();
-        const osc2 = audioCtx.createOscillator();
-        const mainGain = audioCtx.createGain();
-
-        osc1.type = 'sawtooth';
-        osc2.type = 'triangle';
-
-        const startPitch = 540 + Math.random() * 50;
-        const peakPitch = 1280 + Math.random() * 120;
-        const endPitch = 650 + Math.random() * 60;
-
-        osc1.frequency.setValueAtTime(startPitch, now);
-        osc1.frequency.exponentialRampToValueAtTime(peakPitch, now + 0.14);
-        osc1.frequency.exponentialRampToValueAtTime(endPitch, now + duration);
-
-        osc2.frequency.setValueAtTime(startPitch * 1.5, now);
-        osc2.frequency.exponentialRampToValueAtTime(peakPitch * 1.4, now + 0.14);
-        osc2.frequency.exponentialRampToValueAtTime(endPitch * 1.4, now + duration);
-
-        // Scream Vocal Distortion / Throat Tremolo (FM modulation)
-        const screamFM = audioCtx.createOscillator();
-        const screamFMGain = audioCtx.createGain();
-        screamFM.frequency.setValueAtTime(65 + Math.random() * 15, now); // Throat rasp rate
-        screamFMGain.gain.setValueAtTime(95, now);
-
-        screamFM.connect(osc1.frequency);
-        screamFM.start(now);
-        screamFM.stop(now + duration);
-
-        // Vocal Formant Filters (F1 ~ 850Hz, F2 ~ 1450Hz, F3 ~ 2900Hz)
-        const formant1 = audioCtx.createBiquadFilter();
-        formant1.type = 'bandpass';
-        formant1.frequency.setValueAtTime(850, now);
-        formant1.Q.setValueAtTime(3.2, now);
-
-        const formant2 = audioCtx.createBiquadFilter();
-        formant2.type = 'bandpass';
-        formant2.frequency.setValueAtTime(1450, now);
-        formant2.Q.setValueAtTime(3.5, now);
-
-        const formant3 = audioCtx.createBiquadFilter();
-        formant3.type = 'bandpass';
-        formant3.frequency.setValueAtTime(2900, now);
-        formant3.Q.setValueAtTime(4.2, now);
-
-        mainGain.gain.setValueAtTime(0.01, now);
-        mainGain.gain.linearRampToValueAtTime(0.55, now + 0.07); // Sharp vocal onset
-        mainGain.gain.setValueAtTime(0.55, now + 0.28);
-        mainGain.gain.exponentialRampToValueAtTime(0.005, now + duration);
-
-        const oscMix = audioCtx.createGain();
-        oscMix.gain.value = 0.5;
-        osc1.connect(oscMix);
-        osc2.connect(oscMix);
-
-        oscMix.connect(formant1);
-        oscMix.connect(formant2);
-        oscMix.connect(formant3);
-
-        formant1.connect(mainGain);
-        formant2.connect(mainGain);
-        formant3.connect(mainGain);
-
-        mainGain.connect(audioCtx.destination);
-
-        osc1.start(now);
-        osc2.start(now);
-        osc1.stop(now + duration);
-        osc2.stop(now + duration);
-
-        // 2. Breathy Screaming Air Noise
-        const noiseBufferSize = Math.floor(audioCtx.sampleRate * duration);
-        const noiseBuffer = audioCtx.createBuffer(1, noiseBufferSize, audioCtx.sampleRate);
-        const noiseData = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < noiseBufferSize; i++) {
-            noiseData[i] = (Math.random() * 2 - 1);
+        try {
+            urloAudio.currentTime = 0;
+            const playPromise = urloAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => console.log('Playback error Urlo:', err));
+            }
+        } catch (err) {
+            console.log('Urlo audio play exception:', err);
         }
-        const noiseSource = audioCtx.createBufferSource();
-        noiseSource.buffer = noiseBuffer;
-
-        const breathFilter = audioCtx.createBiquadFilter();
-        breathFilter.type = 'highpass';
-        breathFilter.frequency.setValueAtTime(2400, now);
-
-        const breathGain = audioCtx.createGain();
-        breathGain.gain.setValueAtTime(0.01, now);
-        breathGain.gain.linearRampToValueAtTime(0.22, now + 0.08);
-        breathGain.gain.exponentialRampToValueAtTime(0.005, now + duration);
-
-        noiseSource.connect(breathFilter);
-        breathFilter.connect(breathGain);
-        breathGain.connect(audioCtx.destination);
-
-        noiseSource.start(now);
     }
 
     // Hit Impact Sound Effect
@@ -1098,14 +943,18 @@
                 // Sposa -> "grido di Munch"
                 // Sposo -> "peto assassino"
                 const cloudText = (this.role === 'sposo') ? "peto assassino" : "grido di Munch";
-                const bubbleX = this.x + (this.facing * 35);
-                const bubbleY = this.y - 195;
+                const bubbleX = this.x + (this.facing * 20);
+                const bubbleY = this.y - 250;
                 createSpeechBubble(bubbleX, bubbleY, cloudText, this.role);
 
                 // Danno HP fluttuante sopra l'avversario
                 createDamageText(opponent.x, opponent.y - 140, `-${damage} HP`);
                 
-                playHitSFX();
+                if (this.role === 'sposa') {
+                    playMunchScreamSFX();
+                } else {
+                    playHitSFX();
+                }
             }
         }
 
@@ -1219,9 +1068,9 @@
             x: x,
             y: y,
             vx: 0,
-            vy: -0.65,
-            life: 60,
-            maxLife: 60
+            vy: -0.95,
+            life: 55,
+            maxLife: 55
         });
     }
 
@@ -1265,64 +1114,64 @@
                 // Elastic spring pop-in scale animation
                 let scale = 1;
                 if (progress < 0.15) {
-                    scale = (progress / 0.15) * 1.15;
+                    scale = (progress / 0.15) * 1.1;
                 } else if (progress < 0.25) {
-                    scale = 1.15 - ((progress - 0.15) / 0.10) * 0.15;
+                    scale = 1.1 - ((progress - 0.15) / 0.10) * 0.1;
                 } else if (progress > 0.8) {
                     scale = 1 - ((progress - 0.8) / 0.2);
                 }
 
                 // Smooth fade-out alpha
-                let alpha = 1;
-                if (progress > 0.75) {
-                    alpha = (1 - progress) / 0.25;
+                let alpha = 0.9;
+                if (progress > 0.7) {
+                    alpha = (1 - progress) / 0.3 * 0.9;
                 }
 
                 ctx.save();
-                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+                ctx.globalAlpha = Math.max(0, Math.min(0.9, alpha));
                 ctx.translate(p.x, p.y);
                 ctx.scale(scale, scale);
 
                 const isSposo = (p.role === 'sposo');
-                const bubbleWidth = isSposo ? 175 : 185;
-                const bubbleHeight = 52;
+                const bubbleWidth = isSposo ? 145 : 155;
+                const bubbleHeight = 38;
                 const hw = bubbleWidth / 2;
                 const hh = bubbleHeight / 2;
 
                 // Glowing drop shadow for cloud bubble
-                ctx.shadowColor = isSposo ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)';
-                ctx.shadowBlur = 14;
-                ctx.shadowOffsetY = 4;
+                ctx.shadowColor = isSposo ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetY = 2;
 
-                // White / Cream cloud body fill
-                ctx.fillStyle = '#FFFFFF';
+                // Translucent cream-white cloud body fill (82% opacity for crystal clear visibility behind)
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
                 ctx.strokeStyle = isSposo ? '#16A34A' : '#DC2626';
-                ctx.lineWidth = 3.5;
+                ctx.lineWidth = 2.8;
 
                 // Render fluffy comic cloud / speech bubble shape ("nuvoletta")
                 ctx.beginPath();
                 
                 // Top lobes
-                ctx.arc(-hw + 25, -hh, 22, Math.PI * 0.7, Math.PI * 1.8);
-                ctx.arc(0, -hh - 6, 28, Math.PI * 0.95, Math.PI * 1.95);
-                ctx.arc(hw - 25, -hh, 22, Math.PI * 1.1, Math.PI * 0.2);
+                ctx.arc(-hw + 18, -hh, 16, Math.PI * 0.7, Math.PI * 1.8);
+                ctx.arc(0, -hh - 4, 20, Math.PI * 0.95, Math.PI * 1.95);
+                ctx.arc(hw - 18, -hh, 16, Math.PI * 1.1, Math.PI * 0.2);
                 
                 // Right side lobe
-                ctx.arc(hw + 5, 0, 22, Math.PI * 1.6, Math.PI * 0.4);
+                ctx.arc(hw + 4, 0, 16, Math.PI * 1.6, Math.PI * 0.4);
                 
                 // Bottom right lobe
-                ctx.arc(hw - 25, hh, 22, Math.PI * 0.1, Math.PI * 0.9);
+                ctx.arc(hw - 18, hh, 16, Math.PI * 0.1, Math.PI * 0.9);
                 
                 // Nuvoletta pointer tail pointing downwards
-                ctx.lineTo(12, hh + 6);
-                ctx.lineTo(0, hh + 22);
-                ctx.lineTo(-14, hh + 8);
+                ctx.lineTo(8, hh + 4);
+                ctx.lineTo(0, hh + 14);
+                ctx.lineTo(-10, hh + 5);
                 
                 // Bottom left lobe
-                ctx.arc(-hw + 25, hh, 22, Math.PI * 0.2, Math.PI * 1.1);
+                ctx.arc(-hw + 18, hh, 16, Math.PI * 0.2, Math.PI * 1.1);
                 
                 // Left side lobe
-                ctx.arc(-hw - 5, 0, 22, Math.PI * 0.6, Math.PI * 1.4);
+                ctx.arc(-hw - 4, 0, 16, Math.PI * 0.6, Math.PI * 1.4);
 
                 ctx.closePath();
                 ctx.fill();
@@ -1332,13 +1181,13 @@
                 ctx.shadowColor = 'transparent';
 
                 // Nuvoletta text styling
-                ctx.font = 'bold 18px "Comic Sans MS", "Montserrat", sans-serif';
+                ctx.font = 'bold 14px "Comic Sans MS", "Montserrat", sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
                 // Text color matching character theme
                 ctx.fillStyle = isSposo ? '#15803D' : '#B91C1C';
-                ctx.fillText(p.text, 0, 2);
+                ctx.fillText(p.text, 0, 1);
 
                 ctx.restore();
             } else if (p.type === 'text') {
