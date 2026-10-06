@@ -166,10 +166,10 @@
                 <!-- Bottom Section: RSVP Confirmation Button -->
                 <div class="space-y-4 sm:space-y-6 pb-2 relative z-10">
                     <div class="space-y-4">
-                        <a href="/conferma" 
-                           class="inline-block px-6 py-2.5 lg:px-8 lg:py-3 bg-sage-dark hover:bg-sage-medium text-white font-serif text-[11px] lg:text-xs uppercase tracking-wider font-semibold rounded-md shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer">
+                        <button disabled 
+                           class="inline-block px-6 py-2.5 lg:px-8 lg:py-3 bg-sage-dark/50 text-white/70 font-serif text-[11px] lg:text-xs uppercase tracking-wider font-semibold rounded-md shadow-sm cursor-not-allowed opacity-60 pointer-events-none">
                             Conferma la tua partecipazione
-                        </a>
+                        </button>
                     </div>
 
                     <p class="font-serif italic text-[9px] lg:text-sm text-charcoal-light">

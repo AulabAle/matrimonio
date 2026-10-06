@@ -26,6 +26,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user is 'amici'.
+     */
+    public function isAmici(): bool
+    {
+        return $this->username === 'amici' || $this->role === 'amici';
+    }
+
+    /**
      * Get the personal record associated with the user.
      */
     public function personalRecord()

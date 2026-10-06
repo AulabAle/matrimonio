@@ -15,7 +15,9 @@
         @if(auth()->check() && auth()->user()->isAdmin())
             <a href="/zona-selfie" class="text-xs uppercase tracking-wider font-semibold {{ request()->is('zona-selfie') ? 'text-gold-dark' : 'text-charcoal hover:text-gold-dark' }} transition duration-200">Zona Selfie</a>
         @endif
-        <a href="/wedding-fight" class="text-xs uppercase tracking-wider font-semibold {{ request()->is('wedding-fight') ? 'text-red-700 font-bold' : 'text-charcoal hover:text-red-700' }} transition duration-200 flex items-center gap-1">🥊 Wedding Fight</a>
+        @if(auth()->check() && auth()->user()->isAmici())
+            <a href="/wedding-fight" class="text-xs uppercase tracking-wider font-semibold {{ request()->is('wedding-fight') ? 'text-red-700 font-bold' : 'text-charcoal hover:text-red-700' }} transition duration-200 flex items-center gap-1">🥊 Wedding Fight</a>
+        @endif
         <a href="#" id="iban-trigger" class="text-xs uppercase tracking-wider font-semibold text-charcoal-light hover:text-gold-dark transition duration-200">Regalo</a>
         <a href="/stampa-invito" target="_blank" class="text-xs uppercase tracking-wider font-semibold text-charcoal-light hover:text-gold-dark transition duration-200">Stampa Invito</a>
         @auth
@@ -74,10 +76,12 @@
                 Zona Selfie
             </a>
         @endif
-        <a href="/wedding-fight" class="text-sm uppercase tracking-wider font-semibold {{ request()->is('wedding-fight') ? 'text-red-700 font-bold' : 'text-charcoal hover:text-red-700' }} transition duration-200 flex items-center gap-3">
-            <span class="text-base">🥊</span>
-            Wedding Fight
-        </a>
+        @if(auth()->check() && auth()->user()->isAmici())
+            <a href="/wedding-fight" class="text-sm uppercase tracking-wider font-semibold {{ request()->is('wedding-fight') ? 'text-red-700 font-bold' : 'text-charcoal hover:text-red-700' }} transition duration-200 flex items-center gap-3">
+                <span class="text-base">🥊</span>
+                Wedding Fight
+            </a>
+        @endif
         <a href="#" id="iban-trigger-mobile" class="text-sm uppercase tracking-wider font-semibold text-charcoal hover:text-gold-dark transition duration-200 flex items-center gap-3">
             <svg class="w-4 h-4 text-gold-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>

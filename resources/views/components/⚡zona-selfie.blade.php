@@ -23,6 +23,7 @@ new class extends Component
             return redirect()->to('/login');
         }
     }
+
     protected function rules()
     {
         return [
@@ -305,11 +306,11 @@ new class extends Component
                  })
                  .catch((err) => {
                      console.error('Errore fotocamera:', err);
-                     this.cameraError = 'Impossibile accedere alla fotocamera. Utilizza il pulsante per caricare una foto dalla galleria.';
+                     this.cameraError = 'Impossibile accedere alla fotocamera. Verifica i permessi del browser o del dispositivo.';
                      this.cameraActive = false;
                  });
              } else {
-                 this.cameraError = 'La fotocamera non è supportata dal browser in uso. Usa il caricamento da file.';
+                 this.cameraError = 'La fotocamera non è supportata dal browser in uso.';
              }
          },
          
@@ -365,7 +366,7 @@ new class extends Component
             Scatta e Condividi i Tuoi Momenti
         </h1>
         <p class="font-serif text-charcoal-light italic text-sm sm:text-base max-w-xl mx-auto">
-            Scatta un ricordo in tempo reale oppure carica una foto per aggiungerla alla galleria di nozze di Monica ed Erasmo!
+            Scatta un ricordo in tempo reale per aggiungerlo alla galleria di nozze di Monica ed Erasmo!
         </p>
     </div>
 
@@ -396,167 +397,8 @@ new class extends Component
         </div>
     @endif
 
-    <!-- Selfie Capture Card -->
-    <div class="bg-white border border-[#D1B280]/40 rounded-xl p-4 sm:p-8 shadow-xl relative overflow-hidden paper-texture">
-        <div class="max-w-2xl mx-auto space-y-6">
-            
-            <div class="flex items-center justify-between border-b border-zinc-200/80 pb-4">
-                <h2 class="font-serif text-lg font-semibold text-charcoal flex items-center gap-2">
-                    <svg class="w-5 h-5 text-gold-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                    </svg>
-                    Scatta o Carica una Foto
-                </h2>
-                <div class="text-xs text-charcoal-light font-serif italic">
-                    Polaroid Moment
-                </div>
-            </div>
-
-            <!-- Viewport / Canvas Container -->
-            <div class="relative bg-zinc-900 rounded-lg overflow-hidden shadow-inner aspect-[4/3] flex items-center justify-center border-4 border-white shadow-md">
-                
-                <!-- Live Video Element -->
-                <video x-ref="videoEl" 
-                       x-show="cameraActive && !capturedPreview" 
-                       autoplay playsinline 
-                       class="w-full h-full object-cover transform -scale-x-100">
-                </video>
-
-                <!-- Hidden Canvas for capturing image -->
-                <canvas x-ref="canvasEl" class="hidden"></canvas>
-
-                <!-- Captured Preview (via Camera) -->
-                <template x-if="capturedPreview">
-                    <img :src="capturedPreview" alt="Anteprima Selfie" class="w-full h-full object-cover">
-                </template>
-
-                <!-- File Upload Livewire Preview -->
-                @if ($photo && !is_string($photo))
-                    <img src="{{ $photo->temporaryUrl() }}" alt="Anteprima file caricato" class="w-full h-full object-cover">
-                @endif
-
-                <!-- Initial Idle State (Camera inactive & no photo uploaded) -->
-                <div x-show="!cameraActive && !capturedPreview && !@js($photo)" 
-                     class="text-center p-6 space-y-4">
-                    <div class="w-16 h-16 rounded-full bg-gold-light/20 text-gold-dark flex items-center justify-center mx-auto border border-gold-medium/40">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                    </div>
-                    <p class="text-white/80 font-serif text-sm max-w-xs mx-auto">
-                        Attiva la fotocamera per scattare direttamente, oppure carica un'immagine dal tuo dispositivo.
-                    </p>
-                </div>
-
-                <!-- Camera Error Alert Overlay -->
-                <div x-show="cameraError" class="absolute inset-0 bg-charcoal/90 text-white p-6 flex flex-col justify-center items-center text-center space-y-3">
-                    <svg class="w-10 h-10 text-gold-medium" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                    <p class="text-sm font-serif" x-text="cameraError"></p>
-                    <button type="button" @click="cameraError = null" class="px-4 py-1.5 bg-gold-dark text-white rounded text-xs uppercase font-semibold">
-                        Chiudi
-                    </button>
-                </div>
-            </div>
-
-            <!-- Controls & Action Buttons -->
-            <div class="space-y-4">
-                
-                <!-- Action Buttons: Camera On / Take Photo / Retake / File Upload -->
-                <div class="flex flex-wrap items-center justify-center gap-3">
-                    
-                    <!-- Start Camera Button -->
-                    <button type="button" 
-                            x-show="!cameraActive && !capturedPreview && !@js($photo)" 
-                            @click="startCamera()" 
-                            class="px-5 py-2.5 bg-sage-dark hover:bg-sage-medium text-white font-serif text-xs uppercase tracking-wider font-semibold rounded-lg shadow transition-all duration-200 flex items-center gap-2 cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                        </svg>
-                        Apri Fotocamera
-                    </button>
-
-                    <!-- Take Snapshot Button -->
-                    <button type="button" 
-                            x-show="cameraActive && !capturedPreview" 
-                            @click="takeSnapshot()" 
-                            class="px-6 py-2.5 bg-gold-dark hover:bg-gold-medium text-white font-serif text-xs uppercase tracking-wider font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 cursor-pointer ring-4 ring-gold-light/40 animate-pulse">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        Scatta Foto
-                    </button>
-
-                    <!-- Retake Camera Snapshot Button -->
-                    <button type="button" 
-                            x-show="capturedPreview" 
-                            @click="retake()" 
-                            class="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 text-charcoal font-serif text-xs uppercase tracking-wider font-semibold rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                        </svg>
-                        Riscatta
-                    </button>
-
-                    <!-- File Upload Button (Fallback / Alternative) -->
-                    <label class="px-4 py-2.5 bg-white border border-zinc-300 hover:border-gold-medium text-charcoal font-serif text-xs uppercase tracking-wider font-semibold rounded-lg shadow-sm hover:shadow transition-all duration-200 flex items-center gap-2 cursor-pointer">
-                        <svg class="w-4 h-4 text-gold-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                        </svg>
-                        <span>Carica Foto</span>
-                        <input type="file" wire:model="photo" accept="image/*" capture="user" class="hidden" @change="capturedPreview = null; stopCamera()">
-                    </label>
-
-                    <!-- Reset Selection Button -->
-                    <button type="button" 
-                            x-show="capturedPreview || @js($photo) || cameraActive" 
-                            @click="clearSelection()" 
-                            class="px-3 py-2 text-rose-600 hover:text-rose-800 text-xs font-serif italic cursor-pointer">
-                        Annulla
-                    </button>
-                </div>
-
-                <!-- Caption Input & Save Form -->
-                <div x-show="capturedPreview || @js($photo)" x-transition class="pt-4 border-t border-zinc-200/80 space-y-4">
-                    <div>
-                        <label for="caption" class="block font-serif text-xs uppercase tracking-wider text-charcoal font-semibold mb-1">
-                            Aggiungi una dedica o il tuo nome (opzionale)
-                        </label>
-                        <input type="text" 
-                               id="caption"
-                               wire:model="caption" 
-                               placeholder="Es: Auguri dagli zii Marco e Lucia!" 
-                               class="w-full px-4 py-2.5 border border-zinc-300 rounded-lg text-sm text-charcoal focus:ring-2 focus:ring-gold-medium/50 focus:border-gold-medium outline-none transition-all">
-                        @error('caption') <span class="text-rose-600 text-xs mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="flex justify-center">
-                        <button type="button" 
-                                wire:click="saveSelfie" 
-                                wire:loading.attr="disabled"
-                                class="w-full sm:w-auto px-8 py-3 bg-gold-dark hover:bg-gold-medium disabled:opacity-50 text-white font-serif text-sm uppercase tracking-widest font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
-                            <span wire:loading.remove wire:target="saveSelfie">Pubblica Foto nella Galleria</span>
-                            <span wire:loading wire:target="saveSelfie" class="flex items-center gap-2">
-                                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Salvataggio in corso...
-                            </span>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-    </div>
-
     <!-- Gallery Section Header & Display Mode Selector -->
-    <div class="space-y-6 pt-6">
+    <div class="space-y-6">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-zinc-200/80 pb-4">
             <div>
                 <h2 class="font-serif text-2xl sm:text-3xl text-charcoal font-semibold text-center sm:text-left">
@@ -567,42 +409,26 @@ new class extends Component
                 </p>
             </div>
 
-            <!-- Action & View Switcher Tabs (Carosello / Griglia Foto / Scarica ZIP) -->
-            @if ($this->selfies->isNotEmpty())
-                <div class="flex flex-wrap items-center gap-3">
-                    <button type="button" 
-                            wire:click="downloadAllPolaroids" 
-                            wire:loading.attr="disabled"
-                            class="px-3.5 py-1.5 rounded-lg bg-gold-dark hover:bg-gold-medium text-white font-serif text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        <span wire:loading.remove wire:target="downloadAllPolaroids">Scarica ZIP Polaroid</span>
-                        <span wire:loading wire:target="downloadAllPolaroids">Creazione ZIP...</span>
-                    </button>
-
-                    <div class="inline-flex rounded-lg bg-zinc-200/70 p-1 border border-zinc-300/60 font-serif text-xs">
-                        <button type="button" 
-                                @click="galleryView = 'carousel'" 
-                                :class="galleryView === 'carousel' ? 'bg-white text-gold-dark font-semibold shadow-sm' : 'text-charcoal-light hover:text-charcoal'"
-                                class="px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-                            </svg>
-                            Carosello Polaroid
-                        </button>
-                        <button type="button" 
-                                @click="galleryView = 'grid'" 
-                                :class="galleryView === 'grid' ? 'bg-white text-gold-dark font-semibold shadow-sm' : 'text-charcoal-light hover:text-charcoal'"
-                                class="px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-                            </svg>
-                            Tutte le Foto (Gestisci)
-                        </button>
-                    </div>
-                </div>
-            @endif
+            <!-- View Switcher Tabs (Carosello / Griglia Foto) -->
+            <div class="inline-flex rounded-lg bg-zinc-200/70 p-1 border border-zinc-300/60 font-serif text-xs">
+                <button type="button" 
+                        @click="galleryView = 'carousel'" 
+                        :class="galleryView === 'carousel' ? 'bg-white text-gold-dark font-semibold shadow-sm' : 'text-charcoal-light hover:text-charcoal'"
+                        class="px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                    </svg>
+                    Carosello Polaroid
+                </button>
+                <button type="button" 
+                        @click="galleryView = 'grid'" 
+                        :class="galleryView === 'grid' ? 'bg-white text-gold-dark font-semibold shadow-sm' : 'text-charcoal-light hover:text-charcoal'"
+                        class="px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                    </svg>
+                    Tutte le Foto (Gestisci)
+            </div>
         </div>
 
         @if ($this->selfies->isEmpty())
@@ -623,7 +449,6 @@ new class extends Component
             <div x-show="galleryView === 'carousel'" x-transition class="space-y-4">
                 <div x-data="{
                         swiper: null,
-                        confirmDeleteId: null,
                         autoTimer: null,
 
                         initSwiper() {
@@ -639,8 +464,11 @@ new class extends Component
                                 fadeEffect: { crossFade: true },
                                 speed: 600,
                                 loop: count > 1,
+                                autoplay: count > 1 ? {
+                                    delay: 3000,
+                                    disableOnInteraction: false,
+                                } : false,
                                 grabCursor: true,
-                                noSwipingClass: 'swiper-no-swiping',
                                 pagination: {
                                     el: '.swiper-pagination',
                                     clickable: true,
@@ -659,8 +487,11 @@ new class extends Component
                         startAutoSlide(count) {
                             this.stopAutoSlide();
                             if (count > 1) {
+                                if (this.swiper && this.swiper.autoplay) {
+                                    this.swiper.autoplay.start();
+                                }
                                 this.autoTimer = setInterval(() => {
-                                    if (this.swiper && !this.confirmDeleteId) {
+                                    if (this.swiper) {
                                         this.swiper.slideNext();
                                     }
                                 }, 3000);
@@ -668,20 +499,13 @@ new class extends Component
                         },
 
                         stopAutoSlide() {
+                            if (this.swiper && this.swiper.autoplay) {
+                                this.swiper.autoplay.stop();
+                            }
                             if (this.autoTimer) {
                                 clearInterval(this.autoTimer);
                                 this.autoTimer = null;
                             }
-                        },
-
-                        openDelete(id) {
-                            this.stopAutoSlide();
-                            this.confirmDeleteId = id;
-                        },
-
-                        closeDelete() {
-                            this.confirmDeleteId = null;
-                            this.startAutoSlide({{ $this->selfies->count() }});
                         }
                      }"
                      x-init="$nextTick(() => initSwiper()); Livewire.on('selfie-added', () => $nextTick(() => initSwiper())); Livewire.on('selfie-deleted', () => $nextTick(() => initSwiper()));"
@@ -718,20 +542,9 @@ new class extends Component
                                             @endif
                                         </div>
 
-                                        <!-- Footer & Action Bar -->
-                                        <div class="flex items-center justify-between border-t border-[#D1B280]/30 pt-3 text-[11px] text-charcoal-light font-serif">
+                                        <!-- Footer Info -->
+                                        <div class="flex items-center justify-center border-t border-[#D1B280]/30 pt-3 text-[11px] text-charcoal-light font-serif">
                                             <span class="tracking-wider">Ricordo N° {{ $this->selfies->count() - $index }} • {{ $selfie->created_at->format('d/m/Y H:i') }}</span>
-                                            
-                                            <!-- Delete Button (swiper-no-swiping ensures clicks are never intercepted) -->
-                                            <button type="button" 
-                                                    @click.stop="openDelete({{ $selfie->id }})" 
-                                                    title="Elimina questa foto"
-                                                    class="swiper-no-swiping inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-200/80 hover:border-rose-600 rounded-lg transition-all duration-200 font-semibold cursor-pointer shadow-sm">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                                Elimina
-                                            </button>
                                         </div>
 
                                     </div>
@@ -748,35 +561,6 @@ new class extends Component
                             <!-- Swiper Pagination Dots -->
                             <div class="swiper-pagination !bottom-1"></div>
                         @endif
-                    </div>
-
-                    <!-- Confirmation Modal for Carousel Delete -->
-                    <div x-show="confirmDeleteId !== null" 
-                         x-transition 
-                         class="fixed inset-0 z-50 bg-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4">
-                        <div class="bg-white rounded-xl p-6 max-w-sm w-full space-y-4 shadow-2xl border border-[#D1B280]/40 text-center paper-texture">
-                            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </div>
-                            <h4 class="font-serif text-lg font-semibold text-charcoal">Eliminare questa foto?</h4>
-                            <p class="font-serif text-xs text-charcoal-light italic">
-                                L'azione rimuoverà definitivamente la foto dalla galleria di nozze.
-                            </p>
-                            <div class="flex items-center justify-center gap-3 pt-2">
-                                <button type="button" 
-                                        @click="closeDelete()" 
-                                        class="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 text-charcoal rounded-lg font-serif text-xs uppercase tracking-wider font-semibold cursor-pointer">
-                                    Annulla
-                                </button>
-                                <button type="button" 
-                                        @click="$wire.deleteSelfie(confirmDeleteId); confirmDeleteId = null" 
-                                        class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-serif text-xs uppercase tracking-wider font-semibold shadow cursor-pointer">
-                                    Sì, Elimina
-                                </button>
-                            </div>
-                        </div>
                     </div>
 
                 </div>
@@ -824,6 +608,152 @@ new class extends Component
             </div>
 
         @endif
+    </div>
+
+    <!-- Selfie Capture Card -->
+    <div x-show="galleryView === 'carousel'" x-transition class="bg-white border border-[#D1B280]/40 rounded-xl p-4 sm:p-8 shadow-xl relative overflow-hidden paper-texture">
+        <div class="max-w-2xl mx-auto space-y-6">
+            
+            <div class="flex items-center justify-between border-b border-zinc-200/80 pb-4">
+                <h2 class="font-serif text-lg font-semibold text-charcoal flex items-center gap-2">
+                    <svg class="w-5 h-5 text-gold-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    </svg>
+                    Scatta una Foto
+                </h2>
+                <div class="text-xs text-charcoal-light font-serif italic">
+                    Polaroid Moment
+                </div>
+            </div>
+
+            <!-- Viewport / Canvas Container -->
+            <div class="relative bg-zinc-900 rounded-lg overflow-hidden shadow-inner aspect-[4/3] flex items-center justify-center border-4 border-white shadow-md">
+                
+                <!-- Live Video Element -->
+                <video x-ref="videoEl" 
+                       x-show="cameraActive && !capturedPreview" 
+                       autoplay playsinline 
+                       class="w-full h-full object-cover transform -scale-x-100">
+                </video>
+
+                <!-- Hidden Canvas for capturing image -->
+                <canvas x-ref="canvasEl" class="hidden"></canvas>
+
+                <!-- Captured Preview (via Camera) -->
+                <template x-if="capturedPreview">
+                    <img :src="capturedPreview" alt="Anteprima Selfie" class="w-full h-full object-cover">
+                </template>
+
+
+                <!-- Initial Idle State (Camera inactive) -->
+                <div x-show="!cameraActive && !capturedPreview" 
+                     class="text-center p-6 space-y-4">
+                    <div class="w-16 h-16 rounded-full bg-gold-light/20 text-gold-dark flex items-center justify-center mx-auto border border-gold-medium/40">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <p class="text-white/80 font-serif text-sm max-w-xs mx-auto">
+                        Attiva la fotocamera per scattare direttamente un ricordo.
+                    </p>
+                </div>
+
+                <!-- Camera Error Alert Overlay -->
+                <div x-show="cameraError" class="absolute inset-0 bg-charcoal/90 text-white p-6 flex flex-col justify-center items-center text-center space-y-3">
+                    <svg class="w-10 h-10 text-gold-medium" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <p class="text-sm font-serif" x-text="cameraError"></p>
+                    <button type="button" @click="cameraError = null" class="px-4 py-1.5 bg-gold-dark text-white rounded text-xs uppercase font-semibold">
+                        Chiudi
+                    </button>
+                </div>
+            </div>
+
+            <!-- Controls & Action Buttons -->
+            <div class="space-y-4">
+                
+                <!-- Action Buttons: Camera On / Take Photo / Retake -->
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    
+                    <!-- Start Camera Button -->
+                    <button type="button" 
+                            x-show="!cameraActive && !capturedPreview" 
+                            @click="startCamera()" 
+                            class="px-5 py-2.5 bg-sage-dark hover:bg-sage-medium text-white font-serif text-xs uppercase tracking-wider font-semibold rounded-lg shadow transition-all duration-200 flex items-center gap-2 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                        </svg>
+                        Apri Fotocamera
+                    </button>
+
+                    <!-- Take Snapshot Button -->
+                    <button type="button" 
+                            x-show="cameraActive && !capturedPreview" 
+                            @click="takeSnapshot()" 
+                            class="px-6 py-2.5 bg-gold-dark hover:bg-gold-medium text-white font-serif text-xs uppercase tracking-wider font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 cursor-pointer ring-4 ring-gold-light/40 animate-pulse">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Scatta Foto
+                    </button>
+
+                    <!-- Retake Camera Snapshot Button -->
+                    <button type="button" 
+                            x-show="capturedPreview" 
+                            @click="retake()" 
+                            class="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 text-charcoal font-serif text-xs uppercase tracking-wider font-semibold rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Riscatta
+                    </button>
+
+                    <!-- Reset Selection Button -->
+                    <button type="button" 
+                            x-show="capturedPreview || cameraActive" 
+                            @click="clearSelection()" 
+                            class="px-3 py-2 text-rose-600 hover:text-rose-800 text-xs font-serif italic cursor-pointer">
+                        Annulla
+                    </button>
+                </div>
+
+                <!-- Caption Input & Save Form -->
+                <div x-show="capturedPreview" x-transition class="pt-4 border-t border-zinc-200/80 space-y-4">
+                    <div>
+                        <label for="caption" class="block font-serif text-xs uppercase tracking-wider text-charcoal font-semibold mb-1">
+                            Aggiungi una dedica o il tuo nome (opzionale)
+                        </label>
+                        <input type="text" 
+                               id="caption"
+                               wire:model="caption" 
+                               placeholder="Es: Auguri dagli zii Marco e Lucia!" 
+                               class="w-full px-4 py-2.5 border border-zinc-300 rounded-lg text-sm text-charcoal focus:ring-2 focus:ring-gold-medium/50 focus:border-gold-medium outline-none transition-all">
+                        @error('caption') <span class="text-rose-600 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex justify-center">
+                        <button type="button" 
+                                wire:click="saveSelfie" 
+                                wire:loading.attr="disabled"
+                                class="w-full sm:w-auto px-8 py-3 bg-gold-dark hover:bg-gold-medium disabled:opacity-50 text-white font-serif text-sm uppercase tracking-widest font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+                            <span wire:loading.remove wire:target="saveSelfie">Pubblica Foto nella Galleria</span>
+                            <span wire:loading wire:target="saveSelfie" class="flex items-center gap-2">
+                                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Salvataggio in corso...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
     </div>
 
 </div>

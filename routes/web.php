@@ -29,6 +29,9 @@ Route::get('/zona-selfie', function () {
 })->name('zona-selfie');
 
 Route::get('/wedding-fight', function () {
+    if (!Auth::check() || !Auth::user()->isAmici()) {
+        return redirect()->route('login');
+    }
     return view('wedding-fight');
 })->name('wedding-fight');
 

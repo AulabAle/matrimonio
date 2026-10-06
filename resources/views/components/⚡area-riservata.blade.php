@@ -2120,7 +2120,7 @@ new class extends Component
         }
 
         // Add XML declaration
-        svgString = '<?xml version="1.0" standalone="no"?>\r\n' + svgString;
+        svgString = '<' + '?xml version="1.0" standalone="no"?>\r\n' + svgString;
 
         // Convert the UTF-8 XML string to base64 safely
         const base64Svg = btoa(unescape(encodeURIComponent(svgString)));

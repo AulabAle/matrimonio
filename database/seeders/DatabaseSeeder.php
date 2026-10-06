@@ -32,6 +32,15 @@ class DatabaseSeeder extends Seeder
                 'role' => 'user',
             ]
         );
+
+        // Seed the amici user
+        User::firstOrCreate(
+            ['username' => 'amici'],
+            [
+                'password' => \Illuminate\Support\Facades\Hash::make('AmiciWedding2026!'),
+                'role' => 'amici',
+            ]
+        );
         // Seed sample selfies for demonstration if none exist
         if (\App\Models\Selfie::count() === 0) {
             \App\Models\Selfie::create([
