@@ -1,9 +1,11 @@
 <?php
  
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\PersonalRecord;
 use App\Models\User;
 use App\Models\Selfie;
+use App\Models\ZonaRossaMedia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -11,7 +13,12 @@ use Livewire\Attributes\Computed;
  
 new class extends Component
 {
-    public $activeTab = 'accounts'; // accounts, rsvp, map
+    use WithFileUploads;
+
+    public $activeTab = 'accounts'; // accounts, rsvp, map, zona-rossa
+    public $mediaFile = null;
+    public $mediaTitle = '';
+    public $mediaCaption = '';
     public $expandedRsvpId = null;
     public $selectedTableId = null;
     public $guestSearch = '';
@@ -91,6 +98,74 @@ new class extends Component
     {
         if (!Auth::check()) {
             return redirect()->to('/login');
+        }
+        if (Auth::user()->isAmici()) {
+            $this->activeTab = 'zona-rossa';
+        }
+    }
+
+    #[Computed]
+    public function zonaRossaMediaList()
+    {
+        $user = Auth::user();
+        if (!$user || !$user->isAmici()) {
+            return [];
+        }
+        return ZonaRossaMedia::orderBy('created_at', 'desc')->get();
+    }
+
+    public function uploadZonaRossaMedia()
+    {
+        $user = Auth::user();
+        if (!$user || !$user->isAmici()) {
+            abort(403, 'Azione non autorizzata.');
+        }
+
+        $this->validate([
+            'mediaFile' => 'required|file|mimes:jpg,jpeg,png,webp,gif,mp4,webm,mov|max:51200',
+            'mediaTitle' => 'nullable|string|max:150',
+            'mediaCaption' => 'nullable|string|max:500',
+        ], [
+            'mediaFile.required' => 'Seleziona un file (immagine o video) da caricare.',
+            'mediaFile.mimes' => 'Il file deve essere un\'immagine (JPG, PNG, WEBP, GIF) o un video (MP4, WEBM, MOV).',
+            'mediaFile.max' => 'La dimensione massima consentita per il file è 50MB.',
+        ]);
+
+        $extension = strtolower($this->mediaFile->getClientOriginalExtension());
+        $isVid = in_array($extension, ['mp4', 'webm', 'mov', 'avi']);
+        $mediaType = $isVid ? 'video' : 'image';
+
+        $storedPath = $this->mediaFile->store('zona-rossa', 'public');
+
+        ZonaRossaMedia::create([
+            'file_path' => $storedPath,
+            'media_type' => $mediaType,
+            'title' => $this->mediaTitle ?: null,
+            'caption' => $this->mediaCaption ?: null,
+            'sort_order' => 0,
+        ]);
+
+        $this->mediaFile = null;
+        $this->mediaTitle = '';
+        $this->mediaCaption = '';
+
+        session()->flash('message', 'File multimediale caricato con successo nella Zona Rossa!');
+    }
+
+    public function deleteZonaRossaMedia($id)
+    {
+        $user = Auth::user();
+        if (!$user || !$user->isAmici()) {
+            abort(403, 'Azione non autorizzata.');
+        }
+
+        $item = ZonaRossaMedia::find($id);
+        if ($item) {
+            if (Storage::disk('public')->exists($item->file_path)) {
+                Storage::disk('public')->delete($item->file_path);
+            }
+            $item->delete();
+            session()->flash('message', 'File rimosso con successo dalla Zona Rossa.');
         }
     }
  
@@ -1281,25 +1356,34 @@ new class extends Component
     <div class="bg-white p-2.5 border border-[#D1B280]/40 rounded-sm shadow-xl relative w-full mx-auto">
         <div class="border border-[#D1B280]/60 p-6 sm:p-8 relative paper-texture">
             
-            <!-- Tab Switcher (Only for Admin) -->
-            @if(Auth::user()->isAdmin())
-                <div class="flex border-b border-zinc-200 gap-6 mb-6 select-none">
+            <!-- Tab Switcher (For Admin and Amici) -->
+            @if(Auth::user()->isAdmin() || Auth::user()->isAmici())
+                <div class="flex flex-wrap border-b border-zinc-200 gap-4 sm:gap-6 mb-6 select-none">
                     <button type="button" wire:click="$set('activeTab', 'accounts')" 
                             class="pb-3 font-serif text-sm font-semibold border-b-2 px-1 transition-all cursor-pointer {{ $activeTab === 'accounts' ? 'border-gold-dark text-gold-dark' : 'border-transparent text-charcoal-light hover:text-charcoal' }}">
                         Dati Account ({{ count($this->records) }})
                     </button>
-                    <button type="button" wire:click="$set('activeTab', 'rsvp')" 
-                            class="pb-3 font-serif text-sm font-semibold border-b-2 px-1 transition-all cursor-pointer {{ $activeTab === 'rsvp' ? 'border-gold-dark text-gold-dark' : 'border-transparent text-charcoal-light hover:text-charcoal' }}">
-                        Partecipazioni RSVP ({{ count($this->rsvps) }})
-                    </button>
-                    <button type="button" wire:click="$set('activeTab', 'map')" 
-                            class="pb-3 font-serif text-sm font-semibold border-b-2 px-1 transition-all cursor-pointer {{ $activeTab === 'map' ? 'border-gold-dark text-gold-dark' : 'border-transparent text-charcoal-light hover:text-charcoal' }}">
-                        Mappa Tavoli (Seating Plan)
-                    </button>
+                    @if(Auth::user()->isAdmin())
+                        <button type="button" wire:click="$set('activeTab', 'rsvp')" 
+                                class="pb-3 font-serif text-sm font-semibold border-b-2 px-1 transition-all cursor-pointer {{ $activeTab === 'rsvp' ? 'border-gold-dark text-gold-dark' : 'border-transparent text-charcoal-light hover:text-charcoal' }}">
+                            Partecipazioni RSVP ({{ count($this->rsvps) }})
+                        </button>
+                        <button type="button" wire:click="$set('activeTab', 'map')" 
+                                class="pb-3 font-serif text-sm font-semibold border-b-2 px-1 transition-all cursor-pointer {{ $activeTab === 'map' ? 'border-gold-dark text-gold-dark' : 'border-transparent text-charcoal-light hover:text-charcoal' }}">
+                            Mappa Tavoli (Seating Plan)
+                        </button>
+                    @endif
+                    @if(Auth::user()->isAmici())
+                        <button type="button" wire:click="$set('activeTab', 'zona-rossa')" 
+                                class="pb-3 font-serif text-sm font-semibold border-b-2 px-1 transition-all cursor-pointer flex items-center gap-1.5 {{ $activeTab === 'zona-rossa' ? 'border-red-700 text-red-700 font-bold' : 'border-transparent text-charcoal-light hover:text-red-700' }}">
+                            <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                            Carica File Zona Rossa
+                        </button>
+                    @endif
                 </div>
             @endif
 
-            @if(!Auth::user()->isAdmin() || $activeTab === 'accounts')
+            @if((!Auth::user()->isAdmin() && !Auth::user()->isAmici()) || $activeTab === 'accounts')
                 <h3 class="font-serif text-lg text-charcoal font-semibold tracking-wide mb-4">
                     {{ Auth::user()->isAdmin() ? 'Lista Completa Dati Personali (Tutti gli Ospiti)' : 'I tuoi Dati Personali Registrati' }}
                 </h3>
@@ -2093,6 +2177,141 @@ new class extends Component
                         <p class="text-sm text-charcoal-light">Nessuna conferma RSVP ancora ricevuta.</p>
                     </div>
                 @endif
+            @endif
+
+            @if(Auth::user()->isAmici() && $activeTab === 'zona-rossa')
+                <div class="space-y-8">
+                    <!-- Upload Section Header -->
+                    <div class="bg-gradient-to-r from-red-950 via-zinc-900 to-red-950 p-6 rounded-xl border border-red-800/40 text-white shadow-lg">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl">📸</span>
+                            <h3 class="font-serif text-xl font-bold text-red-200">
+                                Caricamento File Multimediali per la Zona Rossa
+                            </h3>
+                        </div>
+                        <p class="font-serif text-xs text-zinc-300 italic leading-relaxed">
+                            Area di caricamento riservata esclusivamente all'utente <strong class="text-red-300">"amici"</strong>. I file (foto o video) caricati da qui saranno immediatamente visibili nella sezione "Zona Rossa".
+                        </p>
+                    </div>
+
+                    <!-- Upload Form -->
+                    <div class="bg-[#FAF6F0] p-6 rounded-xl border border-[#D1B280]/40 shadow-sm space-y-4">
+                        <h4 class="font-serif text-sm font-bold uppercase tracking-wider text-charcoal flex items-center gap-2">
+                            <svg class="w-4 h-4 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Carica Nuova Foto / Video
+                        </h4>
+
+                        <form wire:submit="uploadZonaRossaMedia" class="space-y-4">
+                            <!-- File Input -->
+                            <div>
+                                <label for="mediaFile" class="block font-serif text-xs font-semibold text-charcoal mb-1">
+                                    Seleziona Foto o Video <span class="text-red-600">*</span> (JPG, PNG, WEBP, GIF, MP4, WEBM, MOV - max 50MB)
+                                </label>
+                                <input type="file" id="mediaFile" wire:model="mediaFile" 
+                                       accept="image/*,video/*"
+                                       class="w-full text-xs text-charcoal file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-red-800 file:text-white hover:file:bg-red-700 cursor-pointer bg-white border border-[#D1B280]/30 rounded-md p-1.5">
+                                @error('mediaFile')
+                                    <span class="text-red-600 text-xs mt-1 block font-serif">{{ $message }}</span>
+                                @enderror
+
+                                <!-- Loading Indicator -->
+                                <div wire:loading wire:target="mediaFile" class="text-xs text-gold-dark font-serif mt-1 flex items-center gap-2">
+                                    <svg class="animate-spin h-3.5 w-3.5 text-gold-dark" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Elaborazione file in corso...
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="mediaTitle" class="block font-serif text-xs font-semibold text-charcoal mb-1">
+                                        Titolo (Opzionale)
+                                    </label>
+                                    <input type="text" id="mediaTitle" wire:model="mediaTitle"
+                                           placeholder="Es. Il ballo degli sposi"
+                                           class="w-full px-3 py-2 bg-white border border-[#D1B280]/30 rounded-md text-xs text-charcoal">
+                                    @error('mediaTitle')
+                                        <span class="text-red-600 text-xs mt-1 block font-serif">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label for="mediaCaption" class="block font-serif text-xs font-semibold text-charcoal mb-1">
+                                        Didascalia / Descrizione (Opzionale)
+                                    </label>
+                                    <input type="text" id="mediaCaption" wire:model="mediaCaption"
+                                           placeholder="Es. Un momento memorabile..."
+                                           class="w-full px-3 py-2 bg-white border border-[#D1B280]/30 rounded-md text-xs text-charcoal">
+                                    @error('mediaCaption')
+                                        <span class="text-red-600 text-xs mt-1 block font-serif">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="pt-2">
+                                <button type="submit" 
+                                        wire:loading.attr="disabled"
+                                        class="px-6 py-2.5 bg-red-800 hover:bg-red-700 text-white font-serif text-xs uppercase tracking-wider font-semibold rounded-md shadow-md active:scale-95 transition-all flex items-center gap-2 cursor-pointer border border-red-600/40">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                    <span wire:loading.remove wire:target="uploadZonaRossaMedia">Carica File in Zona Rossa</span>
+                                    <span wire:loading wire:target="uploadZonaRossaMedia">Caricamento in corso...</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Uploaded Media Management List -->
+                    <div class="space-y-4">
+                        <h4 class="font-serif text-sm font-bold uppercase tracking-wider text-charcoal flex items-center gap-2 border-b border-[#D1B280]/20 pb-2">
+                            📁 File Caricati Attualmente ({{ count($this->zonaRossaMediaList) }})
+                        </h4>
+
+                        @if(count($this->zonaRossaMediaList) > 0)
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach($this->zonaRossaMediaList as $mItem)
+                                    <div class="bg-white border border-[#D1B280]/30 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-3">
+                                        <div class="relative w-full aspect-video bg-zinc-900 rounded-md overflow-hidden">
+                                            @if($mItem->isVideo())
+                                                <video src="{{ $mItem->media_url }}" class="w-full h-full object-cover" muted></video>
+                                                <span class="absolute top-2 right-2 bg-red-700 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">🎬 Video</span>
+                                            @else
+                                                <img src="{{ $mItem->media_url }}" class="w-full h-full object-cover">
+                                                <span class="absolute top-2 right-2 bg-black/70 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">📸 Foto</span>
+                                            @endif
+                                        </div>
+
+                                        <div class="space-y-1">
+                                            <h5 class="font-serif text-xs font-bold text-charcoal truncate">{{ $mItem->title ?: 'Senza Titolo' }}</h5>
+                                            @if($mItem->caption)
+                                                <p class="font-serif text-[11px] text-zinc-500 italic truncate">"{{ $mItem->caption }}"</p>
+                                            @endif
+                                            <span class="text-[10px] text-zinc-400 block font-mono">{{ $mItem->created_at ? $mItem->created_at->format('d/m/Y H:i') : '' }}</span>
+                                        </div>
+
+                                        <div class="pt-2 border-t border-zinc-100 flex justify-between items-center">
+                                            <a href="/zona-rossa" target="_blank" class="text-[11px] text-red-700 hover:text-red-900 font-serif font-semibold underline flex items-center gap-1">
+                                                Vedi in Zona Rossa
+                                            </a>
+
+                                            <button onclick="confirm('Vuoi davvero eliminare questo file dalla Zona Rossa?') || event.stopImmediatePropagation()"
+                                                    wire:click="deleteZonaRossaMedia({{ $mItem->id }})"
+                                                    class="px-2.5 py-1 bg-zinc-100 hover:bg-red-50 text-red-600 hover:text-red-700 text-xs font-serif rounded border border-zinc-200 hover:border-red-200 transition-colors cursor-pointer flex items-center gap-1">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                Elimina
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-6 bg-zinc-50 rounded-lg border border-dashed border-zinc-300">
+                                <p class="text-xs text-zinc-500 font-serif">Nessun file multimediale caricato finora.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             @endif
 
         </div>

@@ -52,5 +52,23 @@ class DatabaseSeeder extends Seeder
                 'caption' => 'Un ricordo speciale di questa bellissima giornata ❤️',
             ]);
         }
+
+        // Seed sample Zona Rossa media if none exist
+        if (\App\Models\ZonaRossaMedia::count() === 0) {
+            \App\Models\ZonaRossaMedia::create([
+                'file_path' => 'images/zona-rossa/sposi-1.jpg',
+                'media_type' => 'image',
+                'title' => 'Taglio della Torta e Luci Dorate',
+                'caption' => 'Un momento magico circondati dal calore dei nostri cari e dalle luci della festa ❤️',
+                'sort_order' => 1,
+            ]);
+            \App\Models\ZonaRossaMedia::create([
+                'file_path' => 'images/zona-rossa/sposi-2.jpg',
+                'media_type' => 'image',
+                'title' => 'Passeggiata al Tramonto',
+                'caption' => 'Tra i vigneti e i colori caldi del tramonto italiano 🌅',
+                'sort_order' => 2,
+            ]);
+        }
     }
 }

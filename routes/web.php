@@ -35,6 +35,13 @@ Route::get('/wedding-fight', function () {
     return view('wedding-fight');
 })->name('wedding-fight');
 
+Route::get('/zona-rossa', function () {
+    if (!Auth::check() || !Auth::user()->isAmici()) {
+        return redirect()->route('login');
+    }
+    return view('zona-rossa');
+})->name('zona-rossa');
+
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {

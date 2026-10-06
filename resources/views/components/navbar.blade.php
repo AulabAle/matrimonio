@@ -17,6 +17,10 @@
         @endif
         @if(auth()->check() && auth()->user()->isAmici())
             <a href="/wedding-fight" class="text-xs uppercase tracking-wider font-semibold {{ request()->is('wedding-fight') ? 'text-red-700 font-bold' : 'text-charcoal hover:text-red-700' }} transition duration-200 flex items-center gap-1">🥊 Wedding Fight</a>
+            <a href="/zona-rossa" class="text-xs uppercase tracking-wider font-semibold {{ request()->is('zona-rossa') ? 'text-red-700 font-bold border-b-2 border-red-700 pb-0.5' : 'text-charcoal hover:text-red-700' }} transition duration-200 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                Zona Rossa
+            </a>
         @endif
         <a href="#" id="iban-trigger" class="text-xs uppercase tracking-wider font-semibold text-charcoal-light hover:text-gold-dark transition duration-200">Regalo</a>
         <a href="/stampa-invito" target="_blank" class="text-xs uppercase tracking-wider font-semibold text-charcoal-light hover:text-gold-dark transition duration-200">Stampa Invito</a>
@@ -80,6 +84,10 @@
             <a href="/wedding-fight" class="text-sm uppercase tracking-wider font-semibold {{ request()->is('wedding-fight') ? 'text-red-700 font-bold' : 'text-charcoal hover:text-red-700' }} transition duration-200 flex items-center gap-3">
                 <span class="text-base">🥊</span>
                 Wedding Fight
+            </a>
+            <a href="/zona-rossa" class="text-sm uppercase tracking-wider font-semibold {{ request()->is('zona-rossa') ? 'text-red-700 font-bold' : 'text-charcoal hover:text-red-700' }} transition duration-200 flex items-center gap-3">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>
+                Zona Rossa
             </a>
         @endif
         <a href="#" id="iban-trigger-mobile" class="text-sm uppercase tracking-wider font-semibold text-charcoal hover:text-gold-dark transition duration-200 flex items-center gap-3">
