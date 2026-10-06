@@ -309,8 +309,8 @@
                 <span>🎮 NINTENDO 8-BIT SPECIAL EDITION</span>
             </span>
             <div class="flex items-center gap-2">
-                <button type="button" id="fullscreenBtn" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95">
-                    <span id="fullscreenIcon">⛶</span> <span class="hidden sm:inline">Schermo Intero</span>
+                <button type="button" id="fullscreenBtn" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-gold-dark/50 text-gold-light text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95">
+                    <span id="fullscreenIcon">⛶</span> <span class="inline">Schermo Intero</span>
                 </button>
                 <button type="button" id="audioToggleBtn" class="px-3 py-1 rounded-lg bg-red-950/80 hover:bg-red-900 border border-red-700/60 text-red-200 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95">
                     <span id="audioIcon">🔊</span> <span id="audioText">Audio: ON</span>
@@ -1653,30 +1653,82 @@
     const gameMainCard = document.getElementById('gameMainCard');
     const portraitNoticeOverlay = document.getElementById('portraitNoticeOverlay');
 
-    if (fullscreenBtn && gameMainCard) {
-        fullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (gameMainCard.requestFullscreen) {
-                    gameMainCard.requestFullscreen();
-                } else if (gameMainCard.webkitRequestFullscreen) {
-                    gameMainCard.webkitRequestFullscreen();
+    function requestGameFullscreen() {
+        if (document.fullscreenElement || document.webkitFullscreenElement) return;
+
+        const isMobileOrTablet = (window.innerWidth <= 1024) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const target = isMobileOrTablet ? document.documentElement : (gameMainCard || document.documentElement);
+
+        const req = target.requestFullscreen || 
+                    target.webkitRequestFullscreen || 
+                    target.mozRequestFullScreen || 
+                    target.msRequestFullscreen ||
+                    (gameMainCard && (gameMainCard.requestFullscreen || gameMainCard.webkitRequestFullscreen));
+
+        if (req) {
+            try {
+                const res = req.call(target);
+                if (res && res.then) {
+                    res.then(() => {
+                        if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
+                            window.screen.orientation.lock('landscape').catch(() => {});
+                        }
+                    }).catch(() => {
+                        if (target !== gameMainCard && gameMainCard) {
+                            if (gameMainCard.requestFullscreen) gameMainCard.requestFullscreen();
+                            else if (gameMainCard.webkitRequestFullscreen) gameMainCard.webkitRequestFullscreen();
+                        }
+                    });
                 }
-                if (fullscreenIcon) fullscreenIcon.textContent = '🗗';
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
-                if (fullscreenIcon) fullscreenIcon.textContent = '⛶';
+            } catch (e) {
+                console.log('Fullscreen error:', e);
             }
+        }
+    }
+
+    function exitGameFullscreen() {
+        const exitFS = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+        if (exitFS && (document.fullscreenElement || document.webkitFullscreenElement)) {
+            exitFS.call(document).catch(() => {});
+        }
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            requestGameFullscreen();
+        } else {
+            exitGameFullscreen();
+        }
+    }
+
+    if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleFullscreen();
         });
 
-        document.addEventListener('fullscreenchange', () => {
+        const updateFullscreenUI = () => {
+            const isFS = !!(document.fullscreenElement || document.webkitFullscreenElement);
             if (fullscreenIcon) {
-                fullscreenIcon.textContent = (document.fullscreenElement) ? '🗗' : '⛶';
+                fullscreenIcon.textContent = isFS ? '🗗' : '⛶';
             }
-        });
+        };
+
+        document.addEventListener('fullscreenchange', updateFullscreenUI);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+    }
+
+    // Auto-request fullscreen on mobile user touch/interaction if in landscape
+    const autoFullscreenOnMobileTouch = () => {
+        const isMobileOrTablet = (window.innerWidth <= 1024) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const isLandscape = window.innerWidth > window.innerHeight;
+        if (isMobileOrTablet && isLandscape && !document.fullscreenElement && !document.webkitFullscreenElement) {
+            requestGameFullscreen();
+        }
+    };
+
+    if (gameMainCard) {
+        gameMainCard.addEventListener('touchstart', autoFullscreenOnMobileTouch, { passive: true });
     }
 
     function checkDeviceOrientation() {
@@ -1703,6 +1755,7 @@
         selectSposaBtn.classList.remove('border-red-500', 'bg-red-950/90', 'ring-2', 'ring-red-500');
         startMatchBtn.disabled = false;
         initAudio();
+        requestGameFullscreen();
     });
 
     selectSposaBtn.addEventListener('click', () => {
@@ -1711,15 +1764,18 @@
         selectSposoBtn.classList.remove('border-red-500', 'bg-red-950/90', 'ring-2', 'ring-red-500');
         startMatchBtn.disabled = false;
         initAudio();
+        requestGameFullscreen();
     });
 
     startMatchBtn.addEventListener('click', () => {
         initAudio();
+        requestGameFullscreen();
         initMatch();
     });
 
     rematchBtn.addEventListener('click', () => {
         initAudio();
+        requestGameFullscreen();
         initMatch();
     });
 
