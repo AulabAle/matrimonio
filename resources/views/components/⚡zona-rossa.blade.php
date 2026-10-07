@@ -89,23 +89,23 @@ new class extends Component
     </div>
 
     <!-- Filter Bar -->
-    <div class="flex items-center justify-center gap-2 sm:gap-4 border-b border-[#8C6239]/20 pb-4">
+    <div class="flex items-center justify-center gap-1.5 sm:gap-4 border-b border-[#8C6239]/20 pb-4">
         <button wire:click="setFilter('all')" 
-                class="px-4 py-2 rounded-full font-serif text-xs uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 {{ $activeFilter === 'all' ? 'bg-[#58181A] text-white shadow-md ring-2 ring-[#58181A]/30 scale-105 hover:bg-[#4A121A]' : 'bg-white text-charcoal hover:bg-[#FAF6F0] hover:text-[#58181A] border border-[#8C6239]/30 hover:border-[#8C6239]/60' }}">
-            <span>Tutti i Media</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full {{ $activeFilter === 'all' ? 'bg-[#4A121A] text-[#C08081]' : 'bg-zinc-100 text-zinc-600' }}">{{ $this->counts['all'] }}</span>
+                class="px-2.5 sm:px-4 py-2 rounded-full font-serif text-[10px] sm:text-xs uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap {{ $activeFilter === 'all' ? 'bg-[#58181A] text-white shadow-md ring-2 ring-[#58181A]/30 scale-105 hover:bg-[#4A121A]' : 'bg-white text-charcoal hover:bg-[#FAF6F0] hover:text-[#58181A] border border-[#8C6239]/30 hover:border-[#8C6239]/60' }}">
+            <span>Tutti <span class="hidden xs:inline sm:inline">i Media</span></span>
+            <span class="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full {{ $activeFilter === 'all' ? 'bg-[#4A121A] text-[#C08081]' : 'bg-zinc-100 text-zinc-600' }}">{{ $this->counts['all'] }}</span>
         </button>
 
         <button wire:click="setFilter('image')" 
-                class="px-4 py-2 rounded-full font-serif text-xs uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 {{ $activeFilter === 'image' ? 'bg-[#58181A] text-white shadow-md ring-2 ring-[#58181A]/30 scale-105 hover:bg-[#4A121A]' : 'bg-white text-charcoal hover:bg-[#FAF6F0] hover:text-[#58181A] border border-[#8C6239]/30 hover:border-[#8C6239]/60' }}">
+                class="px-2.5 sm:px-4 py-2 rounded-full font-serif text-[10px] sm:text-xs uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap {{ $activeFilter === 'image' ? 'bg-[#58181A] text-white shadow-md ring-2 ring-[#58181A]/30 scale-105 hover:bg-[#4A121A]' : 'bg-white text-charcoal hover:bg-[#FAF6F0] hover:text-[#58181A] border border-[#8C6239]/30 hover:border-[#8C6239]/60' }}">
             <span>📸 Foto</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full {{ $activeFilter === 'image' ? 'bg-[#4A121A] text-[#C08081]' : 'bg-zinc-100 text-zinc-600' }}">{{ $this->counts['image'] }}</span>
+            <span class="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full {{ $activeFilter === 'image' ? 'bg-[#4A121A] text-[#C08081]' : 'bg-zinc-100 text-zinc-600' }}">{{ $this->counts['image'] }}</span>
         </button>
 
         <button wire:click="setFilter('video')" 
-                class="px-4 py-2 rounded-full font-serif text-xs uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 {{ $activeFilter === 'video' ? 'bg-[#58181A] text-white shadow-md ring-2 ring-[#58181A]/30 scale-105 hover:bg-[#4A121A]' : 'bg-white text-charcoal hover:bg-[#FAF6F0] hover:text-[#58181A] border border-[#8C6239]/30 hover:border-[#8C6239]/60' }}">
+                class="px-2.5 sm:px-4 py-2 rounded-full font-serif text-[10px] sm:text-xs uppercase tracking-wider font-semibold transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap {{ $activeFilter === 'video' ? 'bg-[#58181A] text-white shadow-md ring-2 ring-[#58181A]/30 scale-105 hover:bg-[#4A121A]' : 'bg-white text-charcoal hover:bg-[#FAF6F0] hover:text-[#58181A] border border-[#8C6239]/30 hover:border-[#8C6239]/60' }}">
             <span>🎬 Video</span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full {{ $activeFilter === 'video' ? 'bg-[#4A121A] text-[#C08081]' : 'bg-zinc-100 text-zinc-600' }}">{{ $this->counts['video'] }}</span>
+            <span class="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full {{ $activeFilter === 'video' ? 'bg-[#4A121A] text-[#C08081]' : 'bg-zinc-100 text-zinc-600' }}">{{ $this->counts['video'] }}</span>
         </button>
     </div>
 
