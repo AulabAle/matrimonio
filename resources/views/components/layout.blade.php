@@ -31,11 +31,11 @@
         <x-navbar />
 
         <!-- Main Content slot -->
-        <main class="grow flex flex-col justify-center max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-12 {{ $hideScrollOnDesktop ? 'lg:py-4' : '' }} z-10">
+        <main class="grow flex flex-col justify-center max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-12 {{ $hideScrollOnDesktop ? 'lg:py-4' : '' }} relative">
             {{ $slot }}
         </main>
 
-        <footer class="w-full py-8 {{ $hideScrollOnDesktop ? 'lg:py-4 lg:pb-4' : '' }} pb-[calc(2rem+env(safe-area-inset-bottom))] border-t border-zinc-200/60 bg-white z-10 mt-auto">
+        <footer class="w-full py-8 {{ $hideScrollOnDesktop ? 'lg:py-4 lg:pb-4' : '' }} pb-[calc(2rem+env(safe-area-inset-bottom))] border-t border-zinc-200/60 bg-white relative mt-auto">
             <div class="max-w-6xl mx-auto px-6 flex justify-center items-center text-xs text-charcoal-light">
                 <a href="{{ route('area-riservata') }}" class="hover:text-charcoal transition-colors">&copy; 2026 Invito Matrimonio Monica ed Erasmo</a>
             </div>

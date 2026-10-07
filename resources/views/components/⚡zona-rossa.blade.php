@@ -179,23 +179,27 @@ new class extends Component
 
     <!-- Lightbox Modal for Full View -->
     @if($selectedMedia)
-        <div class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-8 transition-opacity duration-300"
-             wire:click.self="closeLightbox">
-            <div class="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center justify-center">
-                
-                <!-- Close X Button -->
-                <button wire:click="closeLightbox" 
-                        class="absolute -top-12 right-0 text-white/80 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
-                        title="Chiudi">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+        <div class="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-8 transition-all duration-300 overflow-y-auto"
+             wire:click.self="closeLightbox"
+             wire:keydown.escape.window="closeLightbox">
+            
+            <!-- Close X Button fixed at top-right -->
+            <button wire:click="closeLightbox" 
+                    class="fixed top-4 right-4 sm:top-6 sm:right-6 z-[1010] text-white/90 hover:text-white p-2.5 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 shadow-xl backdrop-blur-md transition-all duration-200 cursor-pointer focus:outline-none hover:scale-110 active:scale-95 flex items-center justify-center"
+                    title="Chiudi (Esc)">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
 
-                <!-- Media Display -->
-                <div class="w-full flex items-center justify-center max-h-[75vh] overflow-hidden rounded-lg border border-[#8C6239]/40 shadow-2xl bg-black">
+            <div class="relative max-w-5xl w-full flex flex-col items-center justify-center my-auto py-6">
+                
+                <!-- Media Display Container -->
+                <div class="w-full flex items-center justify-center max-h-[78vh] sm:max-h-[82vh] overflow-hidden rounded-xl border border-[#8C6239]/40 shadow-2xl bg-black/80">
                     @if($selectedMedia->isVideo())
-                        <video src="{{ $selectedMedia->media_url }}" controls autoplay class="max-h-[75vh] w-auto max-w-full rounded-lg"></video>
+                        <video src="{{ $selectedMedia->media_url }}" controls autoplay class="max-h-[78vh] sm:max-h-[82vh] w-auto max-w-full rounded-xl object-contain"></video>
                     @else
-                        <img src="{{ $selectedMedia->media_url }}" alt="{{ $selectedMedia->title }}" class="max-h-[75vh] w-auto max-w-full object-contain rounded-lg">
+                        <img src="{{ $selectedMedia->media_url }}" alt="{{ $selectedMedia->title ?: 'Foto Sposi' }}" class="max-h-[78vh] sm:max-h-[82vh] w-auto max-w-full object-contain rounded-xl">
                     @endif
                 </div>
 
@@ -203,12 +207,12 @@ new class extends Component
                 @if($selectedMedia->title || $selectedMedia->caption)
                     <div class="mt-4 text-center text-white space-y-1 max-w-2xl px-4">
                         @if($selectedMedia->title)
-                            <h2 class="font-serif text-lg sm:text-xl font-bold text-[#8C6239]">
+                            <h2 class="font-serif text-lg sm:text-xl font-bold text-[#8C6239] drop-shadow-sm">
                                 {{ $selectedMedia->title }}
                             </h2>
                         @endif
                         @if($selectedMedia->caption)
-                            <p class="font-serif text-sm text-zinc-300 italic">
+                            <p class="font-serif text-sm text-zinc-300 italic leading-relaxed">
                                 "{{ $selectedMedia->caption }}"
                             </p>
                         @endif
