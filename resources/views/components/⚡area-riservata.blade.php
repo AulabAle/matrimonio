@@ -209,11 +209,11 @@ new class extends Component
 
     public function openCreateForm()
     {
+        if (!Auth::user()->isAdmin()) {
+            return;
+        }
         $this->resetForm();
         $this->showForm = true;
-        if (!Auth::user()->isAdmin()) {
-            $this->selectedUserId = Auth::id();
-        }
     }
 
     public function resetForm()
@@ -1216,7 +1216,7 @@ new class extends Component
             
             <div class="flex gap-3 relative z-10">
                 @if(count($this->records) === 0 && !Auth::user()->isAdmin())
-                    <button wire:click="openCreateForm" class="px-4 py-2 bg-sage-dark hover:bg-sage-medium text-white font-serif text-xs uppercase tracking-wider font-semibold rounded-md shadow-md active:scale-95 transition-all cursor-pointer">
+                    <button disabled class="px-4 py-2 bg-sage-dark/60 text-white/70 font-serif text-xs uppercase tracking-wider font-semibold rounded-md shadow-none opacity-60 cursor-not-allowed" title="Inserimento dati disabilitato">
                         Inserisci Dati
                     </button>
                 @endif
@@ -2181,23 +2181,11 @@ new class extends Component
 
             @if(Auth::user()->isAmici() && $activeTab === 'zona-rossa')
                 <div class="space-y-8">
-                    <!-- Upload Section Header -->
-                    <div class="bg-gradient-to-r from-red-950 via-zinc-900 to-red-950 p-6 rounded-xl border border-red-800/40 text-white shadow-lg">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="text-2xl">📸</span>
-                            <h3 class="font-serif text-xl font-bold text-red-200">
-                                Caricamento File Multimediali per la Zona Rossa
-                            </h3>
-                        </div>
-                        <p class="font-serif text-xs text-zinc-300 italic leading-relaxed">
-                            Area di caricamento riservata esclusivamente all'utente <strong class="text-red-300">"amici"</strong>. I file (foto o video) caricati da qui saranno immediatamente visibili nella sezione "Zona Rossa".
-                        </p>
-                    </div>
 
                     <!-- Upload Form -->
-                    <div class="bg-[#FAF6F0] p-6 rounded-xl border border-[#D1B280]/40 shadow-sm space-y-4">
+                    <div class="bg-[#FAF6F0] p-6 rounded-xl border border-[#8C6239]/40 shadow-sm space-y-4">
                         <h4 class="font-serif text-sm font-bold uppercase tracking-wider text-charcoal flex items-center gap-2">
-                            <svg class="w-4 h-4 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <svg class="w-4 h-4 text-[#58181A]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             Carica Nuova Foto / Video
                         </h4>
 
@@ -2205,23 +2193,54 @@ new class extends Component
                             <!-- File Input -->
                             <div>
                                 <label for="mediaFile" class="block font-serif text-xs font-semibold text-charcoal mb-1">
-                                    Seleziona Foto o Video <span class="text-red-600">*</span> (JPG, PNG, WEBP, GIF, MP4, WEBM, MOV - max 50MB)
+                                    Seleziona Foto o Video <span class="text-[#58181A]">*</span> (JPG, PNG, WEBP, GIF, MP4, WEBM, MOV - max 50MB)
                                 </label>
                                 <input type="file" id="mediaFile" wire:model="mediaFile" 
                                        accept="image/*,video/*"
-                                       class="w-full text-xs text-charcoal file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-red-800 file:text-white hover:file:bg-red-700 cursor-pointer bg-white border border-[#D1B280]/30 rounded-md p-1.5">
+                                       class="w-full text-xs text-charcoal file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#58181A] file:text-white hover:file:bg-[#4A121A] cursor-pointer bg-white border border-[#8C6239]/30 rounded-md p-1.5">
                                 @error('mediaFile')
-                                    <span class="text-red-600 text-xs mt-1 block font-serif">{{ $message }}</span>
+                                    <span class="text-[#58181A] text-xs mt-1 block font-serif">{{ $message }}</span>
                                 @enderror
 
                                 <!-- Loading Indicator -->
-                                <div wire:loading wire:target="mediaFile" class="text-xs text-gold-dark font-serif mt-1 flex items-center gap-2">
-                                    <svg class="animate-spin h-3.5 w-3.5 text-gold-dark" fill="none" viewBox="0 0 24 24">
+                                <div wire:loading wire:target="mediaFile" class="text-xs text-[#8C6239] font-serif mt-1 flex items-center gap-2">
+                                    <svg class="animate-spin h-3.5 w-3.5 text-[#8C6239]" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                     Elaborazione file in corso...
                                 </div>
+
+                                <!-- Live File Preview -->
+                                @if ($mediaFile)
+                                    <div class="mt-3 p-3 bg-white border border-[#8C6239]/30 rounded-lg shadow-sm space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-serif text-xs font-bold text-[#58181A] uppercase tracking-wider flex items-center gap-1.5">
+                                                <svg class="w-4 h-4 text-[#8C6239]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                Anteprima File Selezionato
+                                            </span>
+                                            <button type="button" wire:click="$set('mediaFile', null)" class="text-[11px] text-red-600 hover:text-red-800 font-serif font-semibold underline flex items-center gap-1 cursor-pointer">
+                                                ✕ Rimuovi
+                                            </button>
+                                        </div>
+
+                                        <div class="relative w-full max-h-64 bg-zinc-900 rounded-md overflow-hidden flex items-center justify-center border border-[#8C6239]/20 p-1">
+                                            @php
+                                                $ext = strtolower($mediaFile->getClientOriginalExtension());
+                                                $isVideo = in_array($ext, ['mp4', 'webm', 'mov', 'avi']);
+                                            @endphp
+
+                                            @if($isVideo)
+                                                <video src="{{ $mediaFile->temporaryUrl() }}" controls class="w-full max-h-56 rounded object-contain" preload="metadata"></video>
+                                            @else
+                                                <img src="{{ $mediaFile->temporaryUrl() }}" alt="Anteprima file" class="w-full max-h-56 rounded object-contain">
+                                            @endif
+                                        </div>
+                                        <div class="text-[10px] text-zinc-500 font-mono text-center truncate">
+                                            {{ $mediaFile->getClientOriginalName() }} ({{ round($mediaFile->getSize() / 1048576, 2) }} MB)
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2231,9 +2250,9 @@ new class extends Component
                                     </label>
                                     <input type="text" id="mediaTitle" wire:model="mediaTitle"
                                            placeholder="Es. Il ballo degli sposi"
-                                           class="w-full px-3 py-2 bg-white border border-[#D1B280]/30 rounded-md text-xs text-charcoal">
+                                           class="w-full px-3 py-2 bg-white border border-[#8C6239]/30 rounded-md text-xs text-charcoal">
                                     @error('mediaTitle')
-                                        <span class="text-red-600 text-xs mt-1 block font-serif">{{ $message }}</span>
+                                        <span class="text-[#58181A] text-xs mt-1 block font-serif">{{ $message }}</span>
                                     @enderror
                                 </div>
 
@@ -2243,9 +2262,9 @@ new class extends Component
                                     </label>
                                     <input type="text" id="mediaCaption" wire:model="mediaCaption"
                                            placeholder="Es. Un momento memorabile..."
-                                           class="w-full px-3 py-2 bg-white border border-[#D1B280]/30 rounded-md text-xs text-charcoal">
+                                           class="w-full px-3 py-2 bg-white border border-[#8C6239]/30 rounded-md text-xs text-charcoal">
                                     @error('mediaCaption')
-                                        <span class="text-red-600 text-xs mt-1 block font-serif">{{ $message }}</span>
+                                        <span class="text-[#58181A] text-xs mt-1 block font-serif">{{ $message }}</span>
                                     @enderror
                                 </div>
                             </div>
@@ -2253,7 +2272,7 @@ new class extends Component
                             <div class="pt-2">
                                 <button type="submit" 
                                         wire:loading.attr="disabled"
-                                        class="px-6 py-2.5 bg-red-800 hover:bg-red-700 text-white font-serif text-xs uppercase tracking-wider font-semibold rounded-md shadow-md active:scale-95 transition-all flex items-center gap-2 cursor-pointer border border-red-600/40">
+                                        class="px-6 py-2.5 bg-[#58181A] hover:bg-[#4A121A] text-white font-serif text-xs uppercase tracking-wider font-semibold rounded-md shadow-md active:scale-95 transition-all flex items-center gap-2 cursor-pointer border border-[#A0525A]/40">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                                     <span wire:loading.remove wire:target="uploadZonaRossaMedia">Carica File in Zona Rossa</span>
                                     <span wire:loading wire:target="uploadZonaRossaMedia">Caricamento in corso...</span>
@@ -2264,21 +2283,21 @@ new class extends Component
 
                     <!-- Uploaded Media Management List -->
                     <div class="space-y-4">
-                        <h4 class="font-serif text-sm font-bold uppercase tracking-wider text-charcoal flex items-center gap-2 border-b border-[#D1B280]/20 pb-2">
+                        <h4 class="font-serif text-sm font-bold uppercase tracking-wider text-charcoal flex items-center gap-2 border-b border-[#8C6239]/20 pb-2">
                             📁 File Caricati Attualmente ({{ count($this->zonaRossaMediaList) }})
                         </h4>
 
                         @if(count($this->zonaRossaMediaList) > 0)
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach($this->zonaRossaMediaList as $mItem)
-                                    <div class="bg-white border border-[#D1B280]/30 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-3">
+                                    <div class="bg-white border border-[#8C6239]/30 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-3">
                                         <div class="relative w-full aspect-video bg-zinc-900 rounded-md overflow-hidden">
                                             @if($mItem->isVideo())
                                                 <video src="{{ $mItem->media_url }}" class="w-full h-full object-cover" muted></video>
-                                                <span class="absolute top-2 right-2 bg-red-700 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">🎬 Video</span>
+                                                <span class="absolute top-2 right-2 bg-[#58181A] text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">🎬 Video</span>
                                             @else
                                                 <img src="{{ $mItem->media_url }}" class="w-full h-full object-cover">
-                                                <span class="absolute top-2 right-2 bg-black/70 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">📸 Foto</span>
+                                                <span class="absolute top-2 right-2 bg-black/70 text-[#8C6239] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">📸 Foto</span>
                                             @endif
                                         </div>
 
@@ -2291,7 +2310,7 @@ new class extends Component
                                         </div>
 
                                         <div class="pt-2 border-t border-zinc-100 flex justify-between items-center">
-                                            <a href="/zona-rossa" target="_blank" class="text-[11px] text-red-700 hover:text-red-900 font-serif font-semibold underline flex items-center gap-1">
+                                            <a href="/zona-rossa" target="_blank" class="text-[11px] text-[#58181A] hover:text-[#4A121A] font-serif font-semibold underline flex items-center gap-1">
                                                 Vedi in Zona Rossa
                                             </a>
 
