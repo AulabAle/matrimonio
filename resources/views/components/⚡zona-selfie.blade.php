@@ -19,9 +19,6 @@ new class extends Component
 
     public function mount()
     {
-        if (!Auth::check() || !Auth::user()->isAdmin()) {
-            return redirect()->to('/login');
-        }
     }
 
     protected function rules()
@@ -34,9 +31,6 @@ new class extends Component
 
     public function saveSelfie()
     {
-        if (!Auth::check() || !Auth::user()->isAdmin()) {
-            abort(403, 'Azione non autorizzata.');
-        }
         $this->successMessage = null;
         $this->errorMessage = null;
 
@@ -89,9 +83,6 @@ new class extends Component
 
     public function deleteSelfie($id)
     {
-        if (!Auth::check() || !Auth::user()->isAdmin()) {
-            abort(403, 'Azione non autorizzata.');
-        }
         $selfie = Selfie::find($id);
         if ($selfie) {
             if ($selfie->image_path && Storage::disk('public')->exists($selfie->image_path)) {
@@ -110,9 +101,6 @@ new class extends Component
 
     public function downloadAllPolaroids()
     {
-        if (!Auth::check() || !Auth::user()->isAdmin()) {
-            abort(403, 'Azione non autorizzata.');
-        }
 
         $selfies = Selfie::orderBy('created_at', 'desc')->get();
 

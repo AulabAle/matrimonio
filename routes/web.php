@@ -22,23 +22,14 @@ Route::get('/stampa-invito', function () {
 })->name('stampa-invito');
 
 Route::get('/zona-selfie', function () {
-    if (!Auth::check() || !Auth::user()->isAdmin()) {
-        return redirect()->route('login');
-    }
     return view('zona-selfie');
 })->name('zona-selfie');
 
 Route::get('/wedding-fight', function () {
-    if (!Auth::check() || !Auth::user()->isAmici()) {
-        return redirect()->route('login');
-    }
     return view('wedding-fight');
 })->name('wedding-fight');
 
 Route::get('/zona-rossa', function () {
-    if (!Auth::check() || !Auth::user()->isAmici()) {
-        return redirect()->route('login');
-    }
     return view('zona-rossa');
 })->name('zona-rossa');
 

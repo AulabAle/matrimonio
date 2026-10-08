@@ -12,9 +12,6 @@ new class extends Component
 
     public function mount()
     {
-        if (!Auth::check() || !Auth::user()->isAmici()) {
-            return redirect()->to('/login');
-        }
     }
 
     public function setFilter($filter)
