@@ -268,6 +268,7 @@ new class extends Component
 }; ?>
 
 <div class="w-full space-y-10 landscape:space-y-4" 
+     @keydown.escape.window="if (cameraActive) stopCamera()"
      x-data="{
          videoStream: null,
          cameraActive: false,
@@ -284,6 +285,7 @@ new class extends Component
                  .then((stream) => {
                      this.videoStream = stream;
                      this.cameraActive = true;
+                     document.body.style.overflow = 'hidden';
                      $nextTick(() => {
                          const video = this.$refs.videoEl;
                          if (video) {
@@ -296,6 +298,7 @@ new class extends Component
                      console.error('Errore fotocamera:', err);
                      this.cameraError = 'Impossibile accedere alla fotocamera. Verifica i permessi del browser o del dispositivo.';
                      this.cameraActive = false;
+                     document.body.style.overflow = '';
                  });
              } else {
                  this.cameraError = 'La fotocamera non è supportata dal browser in uso.';
@@ -308,6 +311,7 @@ new class extends Component
                  this.videoStream = null;
              }
              this.cameraActive = false;
+             document.body.style.overflow = '';
          },
          
          takeSnapshot() {
@@ -615,7 +619,8 @@ new class extends Component
             </div>
 
             <!-- Viewport / Canvas Container -->
-            <div class="relative bg-zinc-900 rounded-lg overflow-hidden shadow-inner aspect-[4/3] landscape:aspect-[16/9] max-h-[60vh] landscape:max-h-[50vh] flex items-center justify-center border-4 border-white shadow-md w-full mx-auto">
+            <div class="relative bg-zinc-900 rounded-lg overflow-hidden shadow-inner aspect-[4/3] max-h-[60vh] flex items-center justify-center border-4 border-white shadow-md w-full mx-auto transition-all duration-300"
+                 :class="cameraActive ? 'landscape:fixed landscape:inset-0 landscape:z-[100] landscape:w-screen landscape:h-screen landscape:max-h-none landscape:rounded-none landscape:border-0 landscape:shadow-none' : ''">
                 
                 <!-- Live Video Element -->
                 <video x-ref="videoEl" 
@@ -632,13 +637,32 @@ new class extends Component
                     <img :src="capturedPreview" alt="Anteprima Selfie" class="w-full h-full object-cover">
                 </template>
 
+                <!-- Floating Close "X" Button (Top Right) -->
+                <button type="button" 
+                        x-show="cameraActive && !capturedPreview" 
+                        @click="stopCamera()" 
+                        class="absolute top-4 right-4 z-[120] w-12 h-12 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md border border-white/30 shadow-2xl cursor-pointer transition-all active:scale-90 hover:scale-105"
+                        title="Chiudi Fotocamera"
+                        aria-label="Chiudi Fotocamera">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+
+                <!-- Live Status Badge (Top Left) -->
+                <div x-show="cameraActive && !capturedPreview" 
+                     class="absolute top-4 left-4 z-[120] px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/30 text-white font-serif text-xs flex items-center gap-2 pointer-events-none">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="tracking-wider uppercase font-semibold">Fotocamera Live</span>
+                </div>
+
                 <!-- Floating Shutter Button Overlay over Video stream (Active Camera) -->
                 <div x-show="cameraActive && !capturedPreview" 
-                     class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 pointer-events-auto">
+                     class="absolute bottom-5 left-1/2 -translate-x-1/2 z-[120] flex items-center gap-2 pointer-events-auto">
                     <button type="button" 
                             @click="takeSnapshot()" 
-                            class="px-5 py-2 sm:py-2.5 bg-gold-dark/95 hover:bg-gold-medium text-white font-serif text-xs sm:text-sm uppercase tracking-wider font-bold rounded-full shadow-2xl backdrop-blur-md border-2 border-white flex items-center gap-2 cursor-pointer ring-4 ring-gold-light/60 animate-pulse hover:scale-105 active:scale-95 transition-all">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="px-6 py-3 bg-gold-dark/95 hover:bg-gold-medium text-white font-serif text-xs sm:text-sm uppercase tracking-widest font-bold rounded-full shadow-2xl backdrop-blur-md border-2 border-white flex items-center gap-2.5 cursor-pointer ring-4 ring-gold-light/60 animate-pulse hover:scale-105 active:scale-95 transition-all">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
