@@ -101,5 +101,25 @@ html, body {
     font-weight: bold;
 }
 
+/* Mobile / Compact Landscape Styles */
+@media (orientation: landscape) and (max-height: 650px) {
+    /* Hide Navbar and Footer in Mobile Landscape mode */
+    header,
+    header.sticky,
+    footer,
+    #mobile-menu-sidebar,
+    #mobile-menu-backdrop {
+        display: none !important;
+    }
+
+    /* Reduce vertical paddings on main container for landscape screens */
+    main {
+        padding-top: 0.25rem !important;
+        padding-bottom: 0.25rem !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+}
+
 
 

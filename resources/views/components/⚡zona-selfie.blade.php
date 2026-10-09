@@ -267,7 +267,7 @@ new class extends Component
     }
 }; ?>
 
-<div class="w-full space-y-10" 
+<div class="w-full space-y-10 landscape:space-y-4" 
      x-data="{
          videoStream: null,
          cameraActive: false,
@@ -342,7 +342,7 @@ new class extends Component
      }">
 
     <!-- Section Header -->
-    <div class="text-center space-y-3">
+    <div class="text-center space-y-3 landscape:space-y-1 landscape:py-1">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-light/20 border border-gold-medium/30 text-gold-dark text-xs font-semibold uppercase tracking-widest">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
@@ -350,10 +350,10 @@ new class extends Component
             </svg>
             Zona Selfie Sposi
         </div>
-        <h1 class="font-serif text-3xl sm:text-4xl text-charcoal font-semibold">
+        <h1 class="font-serif text-3xl sm:text-4xl text-charcoal font-semibold landscape:text-xl landscape:leading-tight">
             Scatta e Condividi i Tuoi Momenti
         </h1>
-        <p class="font-serif text-charcoal-light italic text-sm sm:text-base max-w-xl mx-auto">
+        <p class="font-serif text-charcoal-light italic text-sm sm:text-base max-w-xl mx-auto landscape:text-xs">
             Scatta un ricordo in tempo reale per aggiungerlo alla galleria di nozze di Monica ed Erasmo!
         </p>
     </div>
@@ -599,11 +599,11 @@ new class extends Component
     </div>
 
     <!-- Selfie Capture Card -->
-    <div x-show="galleryView === 'carousel'" x-transition class="bg-white border border-[#D1B280]/40 rounded-xl p-4 sm:p-8 shadow-xl relative overflow-hidden paper-texture">
-        <div class="max-w-2xl mx-auto space-y-6">
+    <div x-show="galleryView === 'carousel'" x-transition class="bg-white border border-[#D1B280]/40 rounded-xl p-4 sm:p-8 shadow-xl relative overflow-hidden paper-texture landscape:p-3 landscape:my-1">
+        <div class="max-w-2xl mx-auto space-y-6 landscape:space-y-3">
             
-            <div class="flex items-center justify-between border-b border-zinc-200/80 pb-4">
-                <h2 class="font-serif text-lg font-semibold text-charcoal flex items-center gap-2">
+            <div class="flex items-center justify-between border-b border-zinc-200/80 pb-4 landscape:pb-2">
+                <h2 class="font-serif text-lg font-semibold text-charcoal flex items-center gap-2 landscape:text-base">
                     <svg class="w-5 h-5 text-gold-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                     </svg>
@@ -615,7 +615,7 @@ new class extends Component
             </div>
 
             <!-- Viewport / Canvas Container -->
-            <div class="relative bg-zinc-900 rounded-lg overflow-hidden shadow-inner aspect-[4/3] flex items-center justify-center border-4 border-white shadow-md">
+            <div class="relative bg-zinc-900 rounded-lg overflow-hidden shadow-inner aspect-[4/3] landscape:aspect-[16/9] max-h-[60vh] landscape:max-h-[50vh] flex items-center justify-center border-4 border-white shadow-md w-full mx-auto">
                 
                 <!-- Live Video Element -->
                 <video x-ref="videoEl" 
@@ -632,23 +632,36 @@ new class extends Component
                     <img :src="capturedPreview" alt="Anteprima Selfie" class="w-full h-full object-cover">
                 </template>
 
+                <!-- Floating Shutter Button Overlay over Video stream (Active Camera) -->
+                <div x-show="cameraActive && !capturedPreview" 
+                     class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 pointer-events-auto">
+                    <button type="button" 
+                            @click="takeSnapshot()" 
+                            class="px-5 py-2 sm:py-2.5 bg-gold-dark/95 hover:bg-gold-medium text-white font-serif text-xs sm:text-sm uppercase tracking-wider font-bold rounded-full shadow-2xl backdrop-blur-md border-2 border-white flex items-center gap-2 cursor-pointer ring-4 ring-gold-light/60 animate-pulse hover:scale-105 active:scale-95 transition-all">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>Scatta Foto</span>
+                    </button>
+                </div>
 
                 <!-- Initial Idle State (Camera inactive) -->
                 <div x-show="!cameraActive && !capturedPreview" 
-                     class="text-center p-6 space-y-4">
-                    <div class="w-16 h-16 rounded-full bg-gold-light/20 text-gold-dark flex items-center justify-center mx-auto border border-gold-medium/40">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     class="text-center p-4 sm:p-6 space-y-3 landscape:space-y-2">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gold-light/20 text-gold-dark flex items-center justify-center mx-auto border border-gold-medium/40">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
                     </div>
-                    <p class="text-white/80 font-serif text-sm max-w-xs mx-auto">
+                    <p class="text-white/80 font-serif text-xs sm:text-sm max-w-xs mx-auto">
                         Attiva la fotocamera per scattare direttamente un ricordo.
                     </p>
                 </div>
 
                 <!-- Camera Error Alert Overlay -->
-                <div x-show="cameraError" class="absolute inset-0 bg-charcoal/90 text-white p-6 flex flex-col justify-center items-center text-center space-y-3">
+                <div x-show="cameraError" class="absolute inset-0 bg-charcoal/90 text-white p-6 flex flex-col justify-center items-center text-center space-y-3 z-30">
                     <svg class="w-10 h-10 text-gold-medium" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
@@ -660,10 +673,10 @@ new class extends Component
             </div>
 
             <!-- Controls & Action Buttons -->
-            <div class="space-y-4">
+            <div class="space-y-4 landscape:space-y-2">
                 
                 <!-- Action Buttons: Camera On / Take Photo / Retake -->
-                <div class="flex flex-wrap items-center justify-center gap-3">
+                <div class="flex flex-wrap items-center justify-center gap-3 landscape:gap-2">
                     
                     <!-- Start Camera Button -->
                     <button type="button" 
@@ -709,7 +722,7 @@ new class extends Component
                 </div>
 
                 <!-- Caption Input & Save Form -->
-                <div x-show="capturedPreview" x-transition class="pt-4 border-t border-zinc-200/80 space-y-4">
+                <div x-show="capturedPreview" x-transition class="pt-4 border-t border-zinc-200/80 space-y-4 landscape:pt-2 landscape:space-y-2">
                     <div>
                         <label for="caption" class="block font-serif text-xs uppercase tracking-wider text-charcoal font-semibold mb-1">
                             Aggiungi una dedica o il tuo nome (opzionale)
